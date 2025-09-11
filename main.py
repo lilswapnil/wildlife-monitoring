@@ -23,6 +23,7 @@ ssid = "Wokwi-GUEST"
 password = ""
 
 # ThingSpeak config
+THINGSPEAK_WRITE_KEY = "ZB62JYMAC6Y0WI5N"
 THINGSPEAK_API_KEY = THINGSPEAK_WRITE_KEY
 THINGSPEAK_URL = "http://api.thingspeak.com/update"
 
