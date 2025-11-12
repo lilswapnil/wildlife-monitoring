@@ -1,4 +1,6 @@
-# 🦉 Smart Wildlife Monitoring System  
+# 🦉 Smart Wildlife-Monitoring System  
+
+[![Wokwi](https://img.shields.io/badge/Wokwi-Simulate-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
 
 ## 📖 Overview  
 The **Smart Wildlife Monitoring System** is an IoT-based solution designed to monitor animal activity using an ESP32 microcontroller and multiple sensors (PIR, ultrasonic, LDR). It intelligently detects motion, estimates animal size, determines activity periods (day/night), and uploads the data to **ThingSpeak** for visualization and analysis.  
@@ -32,7 +34,18 @@ This system helps researchers and conservationists track wildlife patterns, prev
 
 ## 🚀 Getting Started  
 
-### Wokwi Link: https://wokwi.com/projects/447393208559834113
+## 🤖 Wokwi Simulation
+
+You can test this project without any physical hardware using the Wokwi simulator.
+
+**[▶️ Click here to open the project in Wokwi](https://wokwi.com/projects/447393208559834113)**
+
+The simulation is pre-configured with the ESP32, PIR sensor, ultrasonic sensor, and LDR. When you run the simulation, the ESP32 will connect to the Wokwi WiFi and start sending data to the default ThingSpeak channel.
+
+You can interact with the sensors in the simulation:
+*   **PIR Sensor:** Click on it to simulate motion.
+*   **Ultrasonic Sensor:** Adjust the slider to change the distance.
+*   **LDR Sensor:** Adjust the slider to change the light level.
 
 ### 1. Clone the Repository  
 ```bash
