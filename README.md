@@ -7,7 +7,7 @@
 
 ## 🎥 Project Demo
 
-![Dashboard Demo](assets/demo.mov)
+![Dashboard Demo](assets/demo.mp4)
 
 A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
 
