@@ -9,17 +9,13 @@
 
 ![Dashboard Demo](assets/demo.mov)
 
-*The Forest Watch dashboard displaying real-time wildlife detection data with interactive timeline and analytics.*
+A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
 
 ---
 
 ![Dashboard Demo](assets/dashboard-result.png)
 
 *The Forest Watch dashboard displaying real-time wildlife detection data with interactive timeline and analytics.*
-
----
-
-A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
 
 ---
 
