@@ -3,16 +3,36 @@
 [![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
+---
+
+## 🎥 Project Demo
+
+![Dashboard Demo](assets/demo.mov)
+
+*The Forest Watch dashboard displaying real-time wildlife detection data with interactive timeline and analytics.*
+
+---
+
+# 🌲 Forest Watch: AI-Powered Wildlife Monitoring System
+
+[![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
 ## 🎥 Project Demo
 
 ![Dashboard Demo](assets/demo.mov)
-![Dashboard Demo](assets/dashboard-result.png)
 
 *The Forest Watch dashboard displaying real-time wildlife detection data with interactive timeline and analytics.*
+
+---
+
+A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
+
+---
+
+## ✨ Key Features
 
 ---
 
