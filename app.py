@@ -1,14 +1,24 @@
-from flask import Flask, render_template, jsonify
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import requests
 import os
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 
 # Load environment variables from .env file
 load_dotenv()
 
-app = Flask(__name__)
+app = FastAPI(title="Wildlife Monitoring API", description="API for wildlife monitoring dashboard")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Templates
+templates = Jinja2Templates(directory="templates")
 
 # --- Configuration ---
 # Animal type mapping (reverse of main.py)
@@ -128,25 +138,25 @@ def calculate_dashboard_stats(parsed_feeds: List[Dict]) -> Dict[str, Any]:
         "timeline": parsed_feeds
     }
 
-# --- Flask Routes ---
+# --- FastAPI Routes ---
 
-@app.route('/')
-def index():
+@app.get('/', response_class=HTMLResponse)
+async def index():
     """Render the main dashboard page."""
-    return render_template('index.html')
+    return templates.TemplateResponse("index.html", {"request": {}})
 
-@app.route('/api/dashboard')
-def get_dashboard_data():
+@app.get('/api/dashboard')
+async def get_dashboard_data():
     """A single, powerful endpoint to provide all data for the dashboard."""
     raw_feeds = fetch_thingspeak_data(results=8000)
     
     if raw_feeds is None:
-        return jsonify({'error': 'Failed to fetch data from ThingSpeak. Check credentials and network.'}), 502
+        raise HTTPException(status_code=502, detail="Failed to fetch data from ThingSpeak. Check credentials and network.")
         
     parsed_feeds = process_all_feeds(raw_feeds)
     dashboard_data = calculate_dashboard_stats(parsed_feeds)
     
-    return jsonify(dashboard_data)
+    return dashboard_data
 
 if __name__ == '__main__':
     if not THINGSPEAK_READ_KEY or not THINGSPEAK_CHANNEL_ID or "YOUR_" in THINGSPEAK_READ_KEY:
@@ -155,5 +165,6 @@ if __name__ == '__main__':
     
     port = int(os.getenv('PORT', 5009))
     print(f"🌐 Starting Forest Watch server on http://localhost:{port}")
-    app.run(debug=True, host='0.0.0.0', port=port)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port)
 

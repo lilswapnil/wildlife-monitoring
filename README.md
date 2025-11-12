@@ -12,7 +12,7 @@
   </video>
 </p>
 
-A comprehensive IoT wildlife monitoring system built with a Python Flask backend and simulated in Wokwi. The system uses ThingSpeak for data aggregation and features a backend-heavy architecture with local data persistence, real-time processing, and a modern interactive dashboard for tracking 15 different animal species.
+A comprehensive IoT wildlife monitoring system built with a Python FastAPI backend and simulated in Wokwi. The system uses ThingSpeak for data aggregation and features a backend-heavy architecture with local data persistence, real-time processing, and a modern interactive dashboard for tracking 15 different animal species.
 
 ---
 
@@ -51,7 +51,7 @@ A comprehensive IoT wildlife monitoring system built with a Python Flask backend
 | **Hardware**   | ESP32 (Wokwi Simulation)           |
 | **Firmware**   | MicroPython                         |
 | **Sensors**    | PIR Motion, HC-SR04 Ultrasonic, LDR |
-| **Backend**    | Python, Flask, SQLite               |
+| **Backend**    | Python, FastAPI, SQLite             |
 | **Cloud**      | ThingSpeak IoT Platform             |
 | **Frontend**   | HTML5, CSS3, Vanilla JavaScript     |
 | **Charting**   | Chart.js                            |
@@ -66,7 +66,7 @@ The project follows a professional, modular architecture with clear separation o
 ```
 wildlife-monitoring/
 │
-├── 📄 app.py                    # Main Flask application entry point
+├── 📄 app.py                    # Main FastAPI application entry point
 ├── 📄 requirements.txt          # Python dependencies
 ├── 📄 wokwi.toml               # Wokwi simulator configuration
 ├── 📄 diagram.json             # Wokwi circuit diagram
@@ -107,7 +107,7 @@ wildlife-monitoring/
 ### 📋 Key File Descriptions
 
 **Backend Layer:**
-- `app.py` - Flask application with routing and API endpoints
+- `app.py` - FastAPI application with routing and API endpoints
 - `backend/database.py` - Handles SQLite database initialization, sync, and queries
 - `backend/utils.py` - ThingSpeak API client and data processing functions
 
@@ -139,7 +139,7 @@ wildlife-monitoring/
          │ REST API
          ↓
 ┌─────────────────┐
-│  Flask Backend  │  ← Smart Sync Layer
+│ FastAPI Backend │  ← Smart Sync Layer
 │  SQLite DB      │     (Local Cache)
 └────────┬────────┘
          │ JSON API
@@ -263,7 +263,7 @@ The hardware simulation runs entirely in your browser using Wokwi.
 
 6. **Open the Dashboard:**
    
-   Navigate to **http://localhost:5001** in your browser
+   Navigate to **http://localhost:5009** in your browser
 
 <p align="center">
   <img src="assets/dashboard-init.png" alt="Dashboard Initial View" width="700">
@@ -299,7 +299,7 @@ The backend automatically syncs new data every time you refresh the dashboard, s
 ```
 THINGSPEAK_CHANNEL_ID="YOUR_CHANNEL_ID"
 THINGSPEAK_READ_KEY="YOUR_READ_API_KEY"
-PORT=5001  # Optional: Change server port
+PORT=5009  # Optional: Change server port
 ```
 
 ### Firmware Configuration (`firmware/config.py`)
