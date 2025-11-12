@@ -8,12 +8,13 @@
 ## 🎥 Project Demo
 
 <p align="center">
-  <video src="https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4" width="700" controls autoplay loop muted>
+  <video src=`https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4` width="700" controls autoplay loop muted>
   </video>
 </p>
 
 A comprehensive IoT wildlife monitoring system built with a Python Flask backend and simulated in Wokwi. The system uses ThingSpeak for data aggregation and features a backend-heavy architecture with local data persistence, real-time processing, and a modern interactive dashboard for tracking 15 different animal species.
 
+![Dashboard Demo](`assets/demo.mp4`)
 ---
 
 ![Dashboard Demo](assets/dashboard-result.png)
