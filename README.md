@@ -7,7 +7,10 @@
 
 ## 🎥 Project Demo
 
-![Dashboard Demo](assets/demo.mp4)
+<p align="center">
+  <video src=`https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4` width="700" controls autoplay loop muted>
+  </video>
+</p>
 
 A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
 
@@ -98,7 +101,7 @@ wildlife-monitoring/
     ├── wokwi.png              # Wokwi simulator screenshot
     ├── diagram.png            # Circuit diagram
     ├── ThingSpeak.png         # ThingSpeak configuration
-    └── demo.mov               # Video demonstration
+    └── demo.mp4               # Video demonstration
 ```
 
 ### 📋 Key File Descriptions
