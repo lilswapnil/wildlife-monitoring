@@ -1,4 +1,4 @@
-# 🌲 Forest Watch: Smart Wildlife Monitoring System
+# 🌲 Smart Wildlife Monitoring System: Forest Watch
 
 [![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
 
