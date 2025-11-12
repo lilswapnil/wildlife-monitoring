@@ -9,9 +9,13 @@ mpremote>=1.22.0      # Upload and run files on ESP32
 rshell>=0.0.31        # Alternative REPL/file transfer tool (optional)
 adafruit-ampy>=1.1.0  # Legacy file transfer tool (optional)
 
+# --- Web Application Dependencies (required for Flask app) ---
+Flask>=3.0.0          # Web framework for the dashboard
+flask-cors>=4.0.0     # CORS support for API endpoints
+requests>=2.31.0      # HTTP library for ThingSpeak API calls
+
 # --- Host-side Python Libraries (optional) ---
 # These are not required on the ESP32 itself, but useful for local testing/simulation
-requests>=2.31.0      # For simulating urequests on PC
 pytest>=7.4.0         # For running unit tests locally
 pylint>=2.17.0        # Code linting
 black>=23.9.1         # Code formatting

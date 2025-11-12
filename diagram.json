@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "author": "Swapnil Bhalerao",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": -100, "left": 0 },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir", "top": -150, "left": 200 },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic", "top": 0, "left": 200 },
+    { "type": "wokwi-photoresistor-sensor", "id": "ldr", "top": 100, "left": 200 }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "pir:VCC", "esp:5V", "red", [] ],
+    [ "pir:GND", "esp:GND", "black", [] ],
+    [ "pir:OUT", "esp:D13", "green", [] ],
+    [ "ultrasonic:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic:GND", "esp:GND", "black", [] ],
+    [ "ultrasonic:TRIG", "esp:D14", "blue", [] ],
+    [ "ultrasonic:ECHO", "esp:D12", "purple", [] ],
+    [ "ldr:VCC", "esp:3V3", "red", [] ],
+    [ "ldr:GND", "esp:GND", "black", [] ],
+    [ "ldr:AO", "esp:D34", "orange", [] ]
+  ]
+}

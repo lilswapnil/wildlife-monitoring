@@ -1,1 +1,15 @@
 config.py
+credentials.py
+secrets.py
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.venv
+*.db
+*.sqlite
+.DS_Store

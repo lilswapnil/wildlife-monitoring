@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦉 Wildlife Monitoring Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-paw"></i> Wildlife Monitoring Dashboard</h1>
+                <p class="subtitle">Real-time animal detection and tracking system</p>
+            </div>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Latest Detection Card -->
+        <div class="card latest-detection" id="latestCard">
+            <div class="card-header">
+                <h2><i class="fas fa-bell"></i> Latest Detection</h2>
+                <span class="timestamp" id="latestTimestamp">--</span>
+            </div>
+            <div class="latest-content">
+                <div class="detection-info">
+                    <div class="info-item">
+                        <span class="label">Animal:</span>
+                        <span class="value animal-name" id="latestAnimal">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Distance:</span>
+                        <span class="value" id="latestDistance">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Time of Day:</span>
+                        <span class="value" id="latestTimeOfDay">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Status:</span>
+                        <span class="value" id="latestStatus">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalDetections">0</h3>
+                    <p>Total Detections</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="validDetections">0</h3>
+                    <p>Valid Detections</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-ruler"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="avgDistance">0</h3>
+                    <p>Avg Distance (cm)</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <i class="fas fa-paw"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="animalTypes">0</h3>
+                    <p>Animal Types</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <!-- Animal Distribution Chart -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> Animal Distribution</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="animalChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Time of Day Distribution -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-clock"></i> Activity by Time of Day</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Distance Over Time -->
+            <div class="card chart-card full-width">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line"></i> Distance Measurements Over Time</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detection Timeline -->
+            <div class="card chart-card full-width">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Recent Detections Timeline</h2>
+                </div>
+                <div class="timeline-container" id="timelineContainer">
+                    <div class="loading">Loading detections...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Smart Wildlife Monitoring System &copy; 2024</p>
+            <p class="footer-subtitle">Powered by ESP32 & ThingSpeak</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+

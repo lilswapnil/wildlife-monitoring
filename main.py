@@ -18,12 +18,18 @@ echo = Pin(12, Pin.IN)
 analog = ADC(Pin(34))      
 analog.atten(ADC.ATTN_11DB)  # Set attenuation for full voltage range reading
 
-# WiFi details
-ssid = "Wokwi-GUEST"
-password = ""
+# Try to import credentials, fallback to hardcoded values for testing
+try:
+    from credentials import SSID, PASSWORD, THINGSPEAK_WRITE_KEY
+    ssid = SSID
+    password = PASSWORD
+except ImportError:
+    # Fallback values (for testing or if credentials.py is not available)
+    ssid = "Wokwi-GUEST"
+    password = ""
+    THINGSPEAK_WRITE_KEY = "ZB62JYMAC6Y0WI5N"
 
 # ThingSpeak config
-THINGSPEAK_WRITE_KEY = "ZB62JYMAC6Y0WI5N"
 THINGSPEAK_API_KEY = THINGSPEAK_WRITE_KEY
 THINGSPEAK_URL = "http://api.thingspeak.com/update"
 
