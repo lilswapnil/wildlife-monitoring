@@ -8,7 +8,7 @@
 ## 🎥 Project Demo
 
 <p align="center">
-  <video src=`https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4` width="700" controls autoplay loop muted>
+  <video src="https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4" width="700" controls autoplay loop muted>
   </video>
 </p>
 
