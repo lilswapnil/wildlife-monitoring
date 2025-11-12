@@ -13,14 +13,7 @@
 
 ---
 
-# 🌲 Forest Watch: AI-Powered Wildlife Monitoring System
-
-[![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
----
-
-![Dashboard Demo](assets/demo.mov)
+![Dashboard Demo](assets/dashboard-result.png)
 
 *The Forest Watch dashboard displaying real-time wildlife detection data with interactive timeline and analytics.*
 
