@@ -1,5 +1,6 @@
 # 🌲 Smart Wildlife Monitoring System: Forest Watch
 
+[![CI](https://github.com/lilswapnil/wildlife-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/lilswapnil/wildlife-monitoring/actions/workflows/ci.yml)
 [![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
 
 A sophisticated IoT solution for non-invasive wildlife tracking. This system uses an ESP32 and a suite of sensors to detect, identify, and monitor animal activity, sending real-time data to a sleek, interactive web dashboard.
