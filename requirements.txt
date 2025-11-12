@@ -1,3 +1,4 @@
 # Web Application Dependencies (required for Flask app)
 Flask>=3.0.0          # Web framework for the dashboard
+flask-cors>=4.0.0     # CORS support for Flask
 requests>=2.31.0      # HTTP library for ThingSpeak API calls

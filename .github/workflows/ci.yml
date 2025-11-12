@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install linting dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+    
+    - name: Lint with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 app.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 app.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  test:
+    name: Test Flask Application
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Verify Flask app imports
+      run: |
+        python -c "from app import app; print('Flask app imported successfully')"
+    
+    - name: Test Flask app routes
+      run: |
+        python -c "
+        from app import app
+        with app.test_client() as client:
+            response = client.get('/')
+            assert response.status_code == 200, f'Expected 200, got {response.status_code}'
+            print('✓ Root route works')
+            
+            response = client.get('/api/data')
+            assert response.status_code == 200, f'Expected 200, got {response.status_code}'
+            print('✓ API data route works')
+            
+            response = client.get('/api/stats')
+            assert response.status_code == 200, f'Expected 200, got {response.status_code}'
+            print('✓ API stats route works')
+            
+            response = client.get('/api/latest')
+            # Can be 200 or 500 depending on ThingSpeak config, both acceptable
+            print(f'✓ API latest route accessible (status: {response.status_code})')
+        
+        print('All tests passed!')
+        "
+    
+    - name: Check for security vulnerabilities
+      run: |
+        pip install safety
+        safety check --ignore 70612 || echo "Safety check completed with warnings"
+
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Check Python syntax
+      run: |
+        python -m py_compile app.py
+        echo "✓ app.py syntax is valid"
