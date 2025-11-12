@@ -5,13 +5,12 @@ let allFeeds = []; // Store all feeds for interaction
 // Configuration
 const CONFIG = {
     refreshInterval: 30000, // 30 seconds
-    maxTimelineItems: 50,
     animalIcons: {
-        "Fox": "fa-fox", "Badger": "fa-badger-honey", "Deer": "fa-deer",
+        "Fox": "fa-fox", "Badger": "fa-otter", "Deer": "fa-deer",
         "Squirrel": "fa-squirrel", "Rabbit": "fa-rabbit", "Hedgehog": "fa-hedgehog",
-        "Owl": "fa-owl", "Woodpecker": "fa-woodpecker", "Boar": "fa-boar",
-        "Bear": "fa-bear", "Raccoon": "fa-raccoon", "Skunk": "fa-skunk",
-        "Lynx": "fa-cat", "Wolf": "fa-wolf-pack-balto", "Moose": "fa-moose",
+        "Owl": "fa-owl", "Woodpecker": "fa-crow", "Boar": "fa-boar",
+        "Bear": "fa-bear-paw", "Raccoon": "fa-raccoon", "Skunk": "fa-skunk",
+        "Lynx": "fa-cat", "Wolf": "fa-wolf-pack", "Moose": "fa-moose",
         "Unknown": "fa-question-circle"
     },
     animalColors: [
@@ -30,66 +29,47 @@ Chart.defaults.font.family = "'Inter', sans-serif";
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Forest Watch Dashboard Initialized');
     initializeCharts();
-    fetchInitialData();
-    
-    // Set up auto-refresh
-    setInterval(fetchIncrementalData, CONFIG.refreshInterval);
-
-    // Add event listener for timeline clicks
+    fetchDashboardData();
+    setInterval(fetchDashboardData, CONFIG.refreshInterval);
     document.getElementById('timelineContainer').addEventListener('click', handleTimelineClick);
 });
 
 /**
- * Fetch all data on initial load
+ * Fetch all data from the new single backend endpoint
  */
-async function fetchInitialData() {
+async function fetchDashboardData() {
     try {
-        const [data, stats] = await Promise.all([
-            fetch('/api/data').then(res => res.json()),
-            fetch('/api/stats').then(res => res.json())
-        ]);
+        const response = await fetch('/api/dashboard');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
 
         if (data.error) {
             updateStatus('error', 'Connection Error');
             return;
         }
         
-        allFeeds = data.feeds || [];
+        allFeeds = data.timeline || [];
         
-        if (allFeeds.length === 0) {
-            updateStatus('connected', 'Awaiting Data');
-        } else {
-            updateStatus('connected', 'Live');
-        }
-        
-        updateDashboard(allFeeds, stats);
+        updateStatus('connected', allFeeds.length > 0 ? 'Live' : 'Awaiting Data');
+        updateDashboard(data);
         
     } catch (error) {
         updateStatus('error', 'Connection Error');
-        console.error('Error loading initial data:', error);
+        console.error('Error loading dashboard data:', error);
     }
 }
 
 /**
- * Fetch only the latest data to update the dashboard
+ * Update all components of the dashboard with data from the backend
  */
-async function fetchIncrementalData() {
-    // For simplicity in this project, we'll just re-fetch all data.
-    // In a production scenario, you'd fetch only new data since the last update.
-    console.log("Refreshing data...");
-    fetchInitialData();
-}
+function updateDashboard(data) {
+    updateStats(data.stats);
+    updateCharts(data.charts);
+    updateTimeline(data.timeline);
 
-/**
- * Update all components of the dashboard
- */
-function updateDashboard(feeds, stats) {
-    updateStats(stats);
-    updateCharts(feeds);
-    updateTimeline(feeds);
-
-    // Set the initially selected sighting to be the latest one
-    const latestSighting = feeds.find(f => f.motion === 1);
+    const latestSighting = data.timeline.find(f => f.motion === 1);
     if (latestSighting) {
         updateSelectedSighting(latestSighting.entry_id);
     } else {
@@ -121,7 +101,7 @@ function initializeCharts() {
             responsive: true, maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: true, title: { display: true, text: 'Proximity (m)' } },
-                x: { title: { display: true, text: 'Time' }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } }
+                x: { type: 'time', time: { unit: 'hour' }, title: { display: true, text: 'Time' } }
             }
         }
     });
@@ -131,50 +111,40 @@ function initializeCharts() {
  * Update statistics cards
  */
 function updateStats(stats) {
-    if (!stats || stats.error) return;
+    if (!stats) return;
     document.getElementById('totalDetections').textContent = stats.total_detections || 0;
     document.getElementById('validDetections').textContent = stats.valid_detections || 0;
     document.getElementById('avgDistance').textContent = `${(stats.average_distance / 100).toFixed(1)} m` || '0 m';
-    document.getElementById('animalTypes').textContent = Object.keys(stats.animal_counts || {}).length;
+    document.getElementById('animalTypes').textContent = stats.animal_types || 0;
 }
 
 /**
  * Update all charts with new data
  */
-function updateCharts(feeds) {
-    const validFeeds = feeds.filter(f => f.is_valid_detection);
+function updateCharts(charts) {
+    if (!charts) return;
     
     // Update Animal Distribution Chart
-    const animalCounts = {};
-    validFeeds.forEach(feed => {
-        animalCounts[feed.animal_type] = (animalCounts[feed.animal_type] || 0) + 1;
-    });
-    animalChart.data.labels = Object.keys(animalCounts);
-    animalChart.data.datasets[0].data = Object.values(animalCounts);
+    animalChart.data.labels = charts.animal_distribution.labels;
+    animalChart.data.datasets[0].data = charts.animal_distribution.data;
     animalChart.update('none');
     
     // Update Time of Day Chart
-    const timeCounts = {};
-    validFeeds.forEach(feed => {
-        timeCounts[feed.time_of_day] = (timeCounts[feed.time_of_day] || 0) + 1;
-    });
-    timeChart.data.labels = Object.keys(timeCounts);
-    timeChart.data.datasets[0].data = Object.values(timeCounts);
+    timeChart.data.labels = charts.time_distribution.labels;
+    timeChart.data.datasets[0].data = charts.time_distribution.data;
     timeChart.update('none');
     
     // Update Distance Chart
-    const recentFeeds = validFeeds.filter(f => f.distance > 0).slice(-50);
-    distanceChart.data.labels = recentFeeds.map(f => formatTimestamp(f.timestamp, true));
-    distanceChart.data.datasets[0].data = recentFeeds.map(f => (f.distance / 100).toFixed(2));
+    distanceChart.data.datasets[0].data = charts.proximity_over_time;
     distanceChart.update('none');
 }
 
 /**
  * Update the timeline with recent sightings
  */
-function updateTimeline(feeds) {
+function updateTimeline(timeline) {
     const container = document.getElementById('timelineContainer');
-    const sightingFeeds = feeds.filter(f => f.motion === 1).reverse().slice(0, CONFIG.maxTimelineItems);
+    const sightingFeeds = timeline.filter(f => f.motion === 1).reverse();
     
     if (sightingFeeds.length === 0) {
         container.innerHTML = '<div class="loading-placeholder">Awaiting sensor data...</div>';
