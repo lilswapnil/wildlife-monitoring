@@ -8,8 +8,11 @@
 ## 🎥 Project Demo
 
 <p align="center">
-  <video src="https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4" width="700" controls autoplay loop muted>
-  </video>
+   <video controls playsinline loop muted poster="assets/dashboard-result.png" style="max-width:100%;width:700px;height:auto;">
+      <source src="assets/demo.mp4" type="video/mp4">
+      <source src="assets/demo.mov" type="video/quicktime">
+      Your browser does not support embedded video. Download or view the demo: <a href="assets/demo.mov">Demo video</a>.
+   </video>
 </p>
 
 A comprehensive IoT wildlife monitoring system built with a Python FastAPI backend and simulated in Wokwi. The system uses ThingSpeak for data aggregation and features a backend-heavy architecture with local data persistence, real-time processing, and a modern interactive dashboard for tracking 15 different animal species.
