@@ -1,4 +1,4 @@
-# 🌲 Forest Watch: AI-Powered Wildlife Monitoring System
+# 🌲 IoT Wildlife Monitoring System: Forest Watch
 
 [![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -8,11 +8,11 @@
 ## 🎥 Project Demo
 
 <p align="center">
-  <video src=`https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4` width="700" controls autoplay loop muted>
+  <video src="https://github.com/lilswapnil/wildlife-monitoring/raw/main/assets/demo.mp4" width="700" controls autoplay loop muted>
   </video>
 </p>
 
-A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
+A comprehensive IoT wildlife monitoring system built with a Python Flask backend and simulated in Wokwi. The system uses ThingSpeak for data aggregation and features a backend-heavy architecture with local data persistence, real-time processing, and a modern interactive dashboard for tracking 15 different animal species.
 
 ---
 
@@ -101,7 +101,7 @@ wildlife-monitoring/
     ├── wokwi.png              # Wokwi simulator screenshot
     ├── diagram.png            # Circuit diagram
     ├── ThingSpeak.png         # ThingSpeak configuration
-    └── demo.mp4               # Video demonstration
+    └── demo.mov               # Video demonstration
 ```
 
 ### 📋 Key File Descriptions

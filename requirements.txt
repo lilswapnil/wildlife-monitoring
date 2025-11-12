@@ -1,3 +1,4 @@
 # Web Application Dependencies (required for Flask app)
 Flask>=3.0.0          # Web framework for the dashboard
 requests>=2.31.0      # HTTP library for ThingSpeak API calls
+python-dotenv>=1.0.0  # For loading environment variables from .env file
