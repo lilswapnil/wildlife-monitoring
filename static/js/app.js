@@ -1,8 +1,3 @@
-/**
- * Wildlife Monitoring Dashboard - Frontend JavaScript
- * Handles data fetching, chart rendering, and real-time updates
- */
-
 // Chart instances
 let animalChart = null;
 let timeChart = null;
@@ -11,12 +6,17 @@ let distanceChart = null;
 // Configuration
 const CONFIG = {
     refreshInterval: 30000, // 30 seconds
-    maxTimelineItems: 20
+    maxTimelineItems: 15
 };
+
+// Chart.js Global Defaults
+Chart.defaults.color = '#c8ccc8';
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+Chart.defaults.font.family = "'Inter', sans-serif";
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Wildlife Monitoring Dashboard initialized');
+    console.log('Forest Watch Dashboard Initialized');
     initializeCharts();
     loadData();
     loadStats();
@@ -44,15 +44,11 @@ function initializeCharts() {
                 datasets: [{
                     data: [],
                     backgroundColor: [
-                        '#667eea',
-                        '#764ba2',
-                        '#f093fb',
-                        '#4facfe',
-                        '#43e97b',
-                        '#f5576c'
+                        '#4caf50', '#8bc34a', '#cddc39', 
+                        '#ffc107', '#ff9800', '#ff5722'
                     ],
                     borderWidth: 2,
-                    borderColor: '#fff'
+                    borderColor: 'rgba(10, 20, 10, 0.7)'
                 }]
             },
             options: {
@@ -63,18 +59,7 @@ function initializeCharts() {
                         position: 'bottom',
                         labels: {
                             padding: 15,
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.parsed || 0;
-                                return `${label}: ${value} detection${value !== 1 ? 's' : ''}`;
-                            }
+                            font: { size: 12 }
                         }
                     }
                 }
@@ -92,12 +77,12 @@ function initializeCharts() {
                 datasets: [{
                     data: [],
                     backgroundColor: [
-                        '#2c3e50', // Night
-                        '#3498db', // Day
-                        '#f39c12'  // Dawn/Dusk
+                        '#2d4a23', // Night
+                        '#8c6b5d', // Day
+                        '#a5d6a7'  // Dawn/Dusk
                     ],
                     borderWidth: 2,
-                    borderColor: '#fff'
+                    borderColor: 'rgba(10, 20, 10, 0.7)'
                 }]
             },
             options: {
@@ -108,18 +93,7 @@ function initializeCharts() {
                         position: 'bottom',
                         labels: {
                             padding: 15,
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.parsed || 0;
-                                return `${label}: ${value} detection${value !== 1 ? 's' : ''}`;
-                            }
+                            font: { size: 12 }
                         }
                     }
                 }
@@ -135,14 +109,16 @@ function initializeCharts() {
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Distance (cm)',
+                    label: 'Proximity (cm)',
                     data: [],
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderColor: '#a5d6a7',
+                    backgroundColor: 'rgba(165, 214, 167, 0.2)',
                     borderWidth: 2,
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
+                    pointBackgroundColor: '#a5d6a7',
+                    pointBorderColor: '#fff',
                     pointHoverRadius: 6
                 }]
             },
@@ -154,26 +130,19 @@ function initializeCharts() {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Distance (cm)'
+                            text: 'Proximity (cm)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     },
                     x: {
                         title: {
                             display: true,
                             text: 'Time'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Distance: ${context.parsed.y} cm`;
-                            }
+                        },
+                        grid: {
+                            display: false
                         }
                     }
                 }
@@ -192,7 +161,6 @@ async function loadData() {
         
         if (result.error) {
             updateStatus('error', 'Connection Error');
-            console.error('Error:', result.error);
             showNoDataMessage('Unable to connect to ThingSpeak. Please check your credentials.');
             return;
         }
@@ -200,21 +168,20 @@ async function loadData() {
         const feeds = result.feeds || [];
         
         if (feeds.length === 0) {
-            updateStatus('connected', 'Connected - Waiting for Data');
-            showNoDataMessage('No wildlife detections yet. Make sure your ESP32 is running and uploading data to ThingSpeak.');
-            updateCharts(feeds);
-            updateTimeline(feeds);
+            updateStatus('connected', 'Connected - Awaiting Data');
+            showNoDataMessage('No wildlife sightings yet. Ensure your ESP32 is active.');
         } else {
-            updateStatus('connected', 'Connected');
+            updateStatus('connected', 'Live');
             hideNoDataMessage();
-            updateCharts(feeds);
-            updateTimeline(feeds);
         }
+        
+        updateCharts(feeds);
+        updateTimeline(feeds);
         
     } catch (error) {
         updateStatus('error', 'Connection Error');
         console.error('Error loading data:', error);
-        showNoDataMessage('Error loading data. Please check the console for details.');
+        showNoDataMessage('Error loading data. Check console for details.');
     }
 }
 
@@ -231,7 +198,6 @@ async function loadStats() {
             return;
         }
         
-        // Update stat cards
         document.getElementById('totalDetections').textContent = result.total_detections || 0;
         document.getElementById('validDetections').textContent = result.valid_detections || 0;
         document.getElementById('avgDistance').textContent = result.average_distance || 0;
@@ -266,7 +232,6 @@ async function loadLatest() {
  * Update all charts with new data
  */
 function updateCharts(feeds) {
-    // Filter valid detections only
     const validFeeds = feeds.filter(f => f.is_valid_detection);
     
     // Update Animal Distribution Chart
@@ -277,27 +242,9 @@ function updateCharts(feeds) {
             animalCounts[animal] = (animalCounts[animal] || 0) + 1;
         });
         
-        const labels = Object.keys(animalCounts);
-        const data = Object.values(animalCounts);
-        
-        // If no data, show empty chart with message
-        if (labels.length === 0) {
-            animalChart.data.labels = ['No Data Yet'];
-            animalChart.data.datasets[0].data = [1];
-            animalChart.data.datasets[0].backgroundColor = ['#e0e0e0'];
-        } else {
-            animalChart.data.labels = labels;
-            animalChart.data.datasets[0].data = data;
-            animalChart.data.datasets[0].backgroundColor = [
-                '#667eea',
-                '#764ba2',
-                '#f093fb',
-                '#4facfe',
-                '#43e97b',
-                '#f5576c'
-            ];
-        }
-        animalChart.update('none'); // 'none' mode for smooth updates
+        animalChart.data.labels = Object.keys(animalCounts);
+        animalChart.data.datasets[0].data = Object.values(animalCounts);
+        animalChart.update('none');
     }
     
     // Update Time of Day Chart
@@ -308,38 +255,20 @@ function updateCharts(feeds) {
             timeCounts[tod] = (timeCounts[tod] || 0) + 1;
         });
         
-        const labels = Object.keys(timeCounts);
-        const data = Object.values(timeCounts);
-        
-        // If no data, show empty chart
-        if (labels.length === 0) {
-            timeChart.data.labels = ['No Data Yet'];
-            timeChart.data.datasets[0].data = [1];
-            timeChart.data.datasets[0].backgroundColor = ['#e0e0e0'];
-        } else {
-            timeChart.data.labels = labels;
-            timeChart.data.datasets[0].data = data;
-            timeChart.data.datasets[0].backgroundColor = [
-                '#2c3e50', // Night
-                '#3498db', // Day
-                '#f39c12'  // Dawn/Dusk
-            ];
-        }
+        timeChart.data.labels = Object.keys(timeCounts);
+        timeChart.data.datasets[0].data = Object.values(timeCounts);
         timeChart.update('none');
     }
     
-    // Update Distance Chart (show last 50 valid detections)
+    // Update Distance Chart
     if (distanceChart) {
         const recentFeeds = validFeeds
             .filter(f => f.distance > 0)
             .slice(0, 50)
-            .reverse(); // Most recent first
+            .reverse();
         
-        const labels = recentFeeds.map(f => formatTimestamp(f.timestamp));
-        const distances = recentFeeds.map(f => f.distance);
-        
-        distanceChart.data.labels = labels;
-        distanceChart.data.datasets[0].data = distances;
+        distanceChart.data.labels = recentFeeds.map(f => formatTimestamp(f.timestamp, true));
+        distanceChart.data.datasets[0].data = recentFeeds.map(f => f.distance);
         distanceChart.update('none');
     }
 }
@@ -351,31 +280,31 @@ function updateTimeline(feeds) {
     const container = document.getElementById('timelineContainer');
     if (!container) return;
     
-    // Get recent detections (most recent first)
     const recentFeeds = feeds
-        .filter(f => f.motion === 1) // Only show motion detections
+        .filter(f => f.motion === 1)
         .slice(0, CONFIG.maxTimelineItems)
         .reverse();
     
     if (recentFeeds.length === 0) {
-        container.innerHTML = '<div class="loading">No detections yet. Waiting for ESP32 to send data...</div>';
+        container.innerHTML = '<div class="loading">Awaiting activity...</div>';
         return;
     }
     
-    container.innerHTML = recentFeeds.map(feed => createTimelineItem(feed)).join('');
+    container.innerHTML = recentFeeds.map(createTimelineItem).join('');
 }
 
 /**
- * Show a no-data message on the dashboard
+ * Show a no-data message
  */
 function showNoDataMessage(message) {
-    // Remove any existing message
+    const container = document.querySelector('.main-grid');
+    if (!container) return;
+
     hideNoDataMessage();
     
-    // Create message element
     const messageDiv = document.createElement('div');
     messageDiv.id = 'noDataMessage';
-    messageDiv.className = 'no-data-message';
+    messageDiv.className = 'card no-data-message';
     messageDiv.innerHTML = `
         <div class="no-data-content">
             <i class="fas fa-info-circle"></i>
@@ -384,21 +313,12 @@ function showNoDataMessage(message) {
         </div>
     `;
     
-    // Insert after the latest detection card
-    const latestCard = document.getElementById('latestCard');
-    if (latestCard && latestCard.parentNode) {
-        latestCard.parentNode.insertBefore(messageDiv, latestCard.nextSibling);
-    }
+    container.parentNode.insertBefore(messageDiv, container);
 }
 
-/**
- * Hide the no-data message
- */
 function hideNoDataMessage() {
     const message = document.getElementById('noDataMessage');
-    if (message) {
-        message.remove();
-    }
+    if (message) message.remove();
 }
 
 /**
@@ -410,20 +330,19 @@ function createTimelineItem(feed) {
     const animal = feed.animal_type || 'Unknown';
     const distance = feed.distance > 0 ? `${feed.distance.toFixed(1)} cm` : 'N/A';
     const timeOfDay = feed.time_of_day || 'Unknown';
-    const timestamp = formatTimestamp(feed.timestamp);
     
-    let statusClass = 'valid';
-    let statusText = 'Valid Detection';
-    let icon = 'fa-check-circle';
-    
+    let statusClass = 'no-motion';
+    let icon = 'fa-question-circle';
+    let title = 'Motion Detected';
+
     if (isFalsePositive) {
         statusClass = 'false-positive';
-        statusText = 'False Positive';
         icon = 'fa-exclamation-triangle';
-    } else if (!isValid) {
-        statusClass = '';
-        statusText = 'No Motion';
-        icon = 'fa-minus-circle';
+        title = 'False Positive';
+    } else if (isValid) {
+        statusClass = 'valid';
+        icon = 'fa-paw';
+        title = animal;
     }
     
     return `
@@ -432,10 +351,10 @@ function createTimelineItem(feed) {
                 <i class="fas ${icon}"></i>
             </div>
             <div class="timeline-content">
-                <h4>${animal}</h4>
-                <p>Distance: ${distance} | Time: ${timeOfDay}</p>
+                <h4>${title}</h4>
+                <p>Proximity: ${distance} | Environment: ${timeOfDay}</p>
             </div>
-            <div class="timeline-time">${timestamp}</div>
+            <div class="timeline-time">${formatTimestamp(feed.timestamp)}</div>
         </div>
     `;
 }
@@ -444,32 +363,33 @@ function createTimelineItem(feed) {
  * Update the latest detection card
  */
 function updateLatestDetection(feed) {
+    const latestAnimal = document.getElementById('latestAnimal');
+    const latestDistance = document.getElementById('latestDistance');
+    const latestTimeOfDay = document.getElementById('latestTimeOfDay');
+    const latestStatus = document.getElementById('latestStatus');
+    const latestTimestamp = document.getElementById('latestTimestamp');
+
     if (!feed) {
-        document.getElementById('latestAnimal').textContent = 'No detections yet';
-        document.getElementById('latestDistance').textContent = '--';
-        document.getElementById('latestTimeOfDay').textContent = '--';
-        document.getElementById('latestStatus').textContent = 'Waiting for data';
-        document.getElementById('latestTimestamp').textContent = '--';
+        latestAnimal.textContent = 'Awaiting data...';
+        latestDistance.textContent = '--';
+        latestTimeOfDay.textContent = '--';
+        latestStatus.textContent = '--';
+        latestTimestamp.textContent = '--';
         return;
     }
     
-    const animal = feed.animal_type || 'Unknown';
-    const distance = feed.distance > 0 ? `${feed.distance.toFixed(1)} cm` : 'N/A';
-    const timeOfDay = feed.time_of_day || 'Unknown';
-    const timestamp = formatTimestamp(feed.timestamp);
-    
-    let status = 'No Detection';
+    let status = 'Low';
     if (feed.false_positive) {
         status = 'False Positive';
     } else if (feed.is_valid_detection) {
-        status = 'Valid Detection';
+        status = 'Confirmed';
     }
     
-    document.getElementById('latestAnimal').textContent = animal;
-    document.getElementById('latestDistance').textContent = distance;
-    document.getElementById('latestTimeOfDay').textContent = timeOfDay;
-    document.getElementById('latestStatus').textContent = status;
-    document.getElementById('latestTimestamp').textContent = timestamp;
+    latestAnimal.textContent = feed.animal_type || 'Unknown';
+    latestDistance.textContent = feed.distance > 0 ? `${feed.distance.toFixed(1)} cm` : 'N/A';
+    latestTimeOfDay.textContent = feed.time_of_day || 'Unknown';
+    latestStatus.textContent = status;
+    latestTimestamp.textContent = formatTimestamp(feed.timestamp);
 }
 
 /**
@@ -480,52 +400,32 @@ function updateStatus(status, text) {
     const dot = indicator.querySelector('.status-dot');
     const textEl = document.getElementById('statusText');
     
-    if (dot) {
-        dot.className = 'status-dot ' + status;
-    }
-    if (textEl) {
-        textEl.textContent = text;
-    }
+    dot.className = 'status-dot ' + status;
+    textEl.textContent = text;
 }
 
 /**
  * Format timestamp for display
  */
-function formatTimestamp(timestamp) {
+function formatTimestamp(timestamp, short = false) {
     if (!timestamp) return '--';
     
     try {
         const date = new Date(timestamp);
-        if (isNaN(date.getTime())) {
-            return timestamp; // Return as-is if not a valid date
-        }
+        if (isNaN(date.getTime())) return timestamp;
         
+        if (short) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+
         const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
+        const diffMins = Math.floor((now - date) / 60000);
         
-        // Show relative time if recent
-        if (diffMins < 1) {
-            return 'Just now';
-        } else if (diffMins < 60) {
-            return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
-        } else if (diffHours < 24) {
-            return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-        } else if (diffDays < 7) {
-            return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
-        }
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins} min ago`;
         
-        // Otherwise show formatted date
-        return date.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } catch (error) {
         return timestamp;
     }
 }
-
