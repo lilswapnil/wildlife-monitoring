@@ -1,12 +1,24 @@
 // Chart instances
-let animalChart = null;
-let timeChart = null;
-let distanceChart = null;
+let animalChart, timeChart, distanceChart;
+let allFeeds = []; // Store all feeds for interaction
 
 // Configuration
 const CONFIG = {
     refreshInterval: 30000, // 30 seconds
-    maxTimelineItems: 15
+    maxTimelineItems: 50,
+    animalIcons: {
+        "Fox": "fa-fox", "Badger": "fa-badger-honey", "Deer": "fa-deer",
+        "Squirrel": "fa-squirrel", "Rabbit": "fa-rabbit", "Hedgehog": "fa-hedgehog",
+        "Owl": "fa-owl", "Woodpecker": "fa-woodpecker", "Boar": "fa-boar",
+        "Bear": "fa-bear", "Raccoon": "fa-raccoon", "Skunk": "fa-skunk",
+        "Lynx": "fa-cat", "Wolf": "fa-wolf-pack-balto", "Moose": "fa-moose",
+        "Unknown": "fa-question-circle"
+    },
+    animalColors: [
+        '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800',
+        '#ff5722', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3',
+        '#00bcd4', '#009688', '#795548'
+    ]
 };
 
 // Chart.js Global Defaults
@@ -18,214 +30,112 @@ Chart.defaults.font.family = "'Inter', sans-serif";
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Forest Watch Dashboard Initialized');
     initializeCharts();
-    loadData();
-    loadStats();
-    loadLatest();
+    fetchInitialData();
     
     // Set up auto-refresh
-    setInterval(() => {
-        loadData();
-        loadStats();
-        loadLatest();
-    }, CONFIG.refreshInterval);
+    setInterval(fetchIncrementalData, CONFIG.refreshInterval);
+
+    // Add event listener for timeline clicks
+    document.getElementById('timelineContainer').addEventListener('click', handleTimelineClick);
 });
+
+/**
+ * Fetch all data on initial load
+ */
+async function fetchInitialData() {
+    try {
+        const [data, stats] = await Promise.all([
+            fetch('/api/data').then(res => res.json()),
+            fetch('/api/stats').then(res => res.json())
+        ]);
+
+        if (data.error) {
+            updateStatus('error', 'Connection Error');
+            return;
+        }
+        
+        allFeeds = data.feeds || [];
+        
+        if (allFeeds.length === 0) {
+            updateStatus('connected', 'Awaiting Data');
+        } else {
+            updateStatus('connected', 'Live');
+        }
+        
+        updateDashboard(allFeeds, stats);
+        
+    } catch (error) {
+        updateStatus('error', 'Connection Error');
+        console.error('Error loading initial data:', error);
+    }
+}
+
+/**
+ * Fetch only the latest data to update the dashboard
+ */
+async function fetchIncrementalData() {
+    // For simplicity in this project, we'll just re-fetch all data.
+    // In a production scenario, you'd fetch only new data since the last update.
+    console.log("Refreshing data...");
+    fetchInitialData();
+}
+
+/**
+ * Update all components of the dashboard
+ */
+function updateDashboard(feeds, stats) {
+    updateStats(stats);
+    updateCharts(feeds);
+    updateTimeline(feeds);
+
+    // Set the initially selected sighting to be the latest one
+    const latestSighting = feeds.find(f => f.motion === 1);
+    if (latestSighting) {
+        updateSelectedSighting(latestSighting.entry_id);
+    } else {
+        clearSelectedSighting();
+    }
+}
 
 /**
  * Initialize all Chart.js charts
  */
 function initializeCharts() {
-    // Animal Distribution Chart (Pie)
-    const animalCtx = document.getElementById('animalChart');
-    if (animalCtx) {
-        animalChart = new Chart(animalCtx, {
-            type: 'pie',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [
-                        '#4caf50', '#8bc34a', '#cddc39', 
-                        '#ffc107', '#ff9800', '#ff5722'
-                    ],
-                    borderWidth: 2,
-                    borderColor: 'rgba(10, 20, 10, 0.7)'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            font: { size: 12 }
-                        }
-                    }
-                }
+    const pieOptions = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 12 } } } }
+    };
+    animalChart = new Chart(document.getElementById('animalChart'), {
+        type: 'pie', data: { labels: [], datasets: [{ data: [], backgroundColor: CONFIG.animalColors }] }, options: pieOptions
+    });
+    timeChart = new Chart(document.getElementById('timeChart'), {
+        type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#2d4a23', '#8c6b5d', '#a5d6a7'] }] }, options: pieOptions
+    });
+    distanceChart = new Chart(document.getElementById('distanceChart'), {
+        type: 'line',
+        data: { labels: [], datasets: [{
+            label: 'Proximity (m)', data: [], borderColor: '#a5d6a7', backgroundColor: 'rgba(165, 214, 167, 0.2)',
+            borderWidth: 2, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#a5d6a7'
+        }]},
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Proximity (m)' } },
+                x: { title: { display: true, text: 'Time' }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } }
             }
-        });
-    }
-
-    // Time of Day Distribution Chart (Doughnut)
-    const timeCtx = document.getElementById('timeChart');
-    if (timeCtx) {
-        timeChart = new Chart(timeCtx, {
-            type: 'doughnut',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [
-                        '#2d4a23', // Night
-                        '#8c6b5d', // Day
-                        '#a5d6a7'  // Dawn/Dusk
-                    ],
-                    borderWidth: 2,
-                    borderColor: 'rgba(10, 20, 10, 0.7)'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            font: { size: 12 }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Distance Over Time Chart (Line)
-    const distanceCtx = document.getElementById('distanceChart');
-    if (distanceCtx) {
-        distanceChart = new Chart(distanceCtx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Proximity (cm)',
-                    data: [],
-                    borderColor: '#a5d6a7',
-                    backgroundColor: 'rgba(165, 214, 167, 0.2)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#a5d6a7',
-                    pointBorderColor: '#fff',
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Proximity (cm)'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Time'
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
+        }
+    });
 }
 
 /**
- * Fetch and display main data
+ * Update statistics cards
  */
-async function loadData() {
-    try {
-        const response = await fetch('/api/data');
-        const result = await response.json();
-        
-        if (result.error) {
-            updateStatus('error', 'Connection Error');
-            showNoDataMessage('Unable to connect to ThingSpeak. Please check your credentials.');
-            return;
-        }
-        
-        const feeds = result.feeds || [];
-        
-        if (feeds.length === 0) {
-            updateStatus('connected', 'Connected - Awaiting Data');
-            showNoDataMessage('No wildlife sightings yet. Ensure your ESP32 is active.');
-        } else {
-            updateStatus('connected', 'Live');
-            hideNoDataMessage();
-        }
-        
-        updateCharts(feeds);
-        updateTimeline(feeds);
-        
-    } catch (error) {
-        updateStatus('error', 'Connection Error');
-        console.error('Error loading data:', error);
-        showNoDataMessage('Error loading data. Check console for details.');
-    }
-}
-
-/**
- * Fetch and display statistics
- */
-async function loadStats() {
-    try {
-        const response = await fetch('/api/stats');
-        const result = await response.json();
-        
-        if (result.error) {
-            console.error('Error loading stats:', result.error);
-            return;
-        }
-        
-        document.getElementById('totalDetections').textContent = result.total_detections || 0;
-        document.getElementById('validDetections').textContent = result.valid_detections || 0;
-        document.getElementById('avgDistance').textContent = result.average_distance || 0;
-        document.getElementById('animalTypes').textContent = Object.keys(result.animal_counts || {}).length;
-        
-    } catch (error) {
-        console.error('Error loading stats:', error);
-    }
-}
-
-/**
- * Fetch and display latest detection
- */
-async function loadLatest() {
-    try {
-        const response = await fetch('/api/latest');
-        const result = await response.json();
-        
-        if (result.error || !result.latest) {
-            updateLatestDetection(null);
-            return;
-        }
-        
-        updateLatestDetection(result.latest);
-        
-    } catch (error) {
-        console.error('Error loading latest:', error);
-    }
+function updateStats(stats) {
+    if (!stats || stats.error) return;
+    document.getElementById('totalDetections').textContent = stats.total_detections || 0;
+    document.getElementById('validDetections').textContent = stats.valid_detections || 0;
+    document.getElementById('avgDistance').textContent = `${(stats.average_distance / 100).toFixed(1)} m` || '0 m';
+    document.getElementById('animalTypes').textContent = Object.keys(stats.animal_counts || {}).length;
 }
 
 /**
@@ -235,173 +145,137 @@ function updateCharts(feeds) {
     const validFeeds = feeds.filter(f => f.is_valid_detection);
     
     // Update Animal Distribution Chart
-    if (animalChart) {
-        const animalCounts = {};
-        validFeeds.forEach(feed => {
-            const animal = feed.animal_type || 'Unknown';
-            animalCounts[animal] = (animalCounts[animal] || 0) + 1;
-        });
-        
-        animalChart.data.labels = Object.keys(animalCounts);
-        animalChart.data.datasets[0].data = Object.values(animalCounts);
-        animalChart.update('none');
-    }
+    const animalCounts = {};
+    validFeeds.forEach(feed => {
+        animalCounts[feed.animal_type] = (animalCounts[feed.animal_type] || 0) + 1;
+    });
+    animalChart.data.labels = Object.keys(animalCounts);
+    animalChart.data.datasets[0].data = Object.values(animalCounts);
+    animalChart.update('none');
     
     // Update Time of Day Chart
-    if (timeChart) {
-        const timeCounts = {};
-        validFeeds.forEach(feed => {
-            const tod = feed.time_of_day || 'Unknown';
-            timeCounts[tod] = (timeCounts[tod] || 0) + 1;
-        });
-        
-        timeChart.data.labels = Object.keys(timeCounts);
-        timeChart.data.datasets[0].data = Object.values(timeCounts);
-        timeChart.update('none');
-    }
+    const timeCounts = {};
+    validFeeds.forEach(feed => {
+        timeCounts[feed.time_of_day] = (timeCounts[feed.time_of_day] || 0) + 1;
+    });
+    timeChart.data.labels = Object.keys(timeCounts);
+    timeChart.data.datasets[0].data = Object.values(timeCounts);
+    timeChart.update('none');
     
     // Update Distance Chart
-    if (distanceChart) {
-        const recentFeeds = validFeeds
-            .filter(f => f.distance > 0)
-            .slice(0, 50)
-            .reverse();
-        
-        distanceChart.data.labels = recentFeeds.map(f => formatTimestamp(f.timestamp, true));
-        distanceChart.data.datasets[0].data = recentFeeds.map(f => f.distance);
-        distanceChart.update('none');
-    }
+    const recentFeeds = validFeeds.filter(f => f.distance > 0).slice(-50);
+    distanceChart.data.labels = recentFeeds.map(f => formatTimestamp(f.timestamp, true));
+    distanceChart.data.datasets[0].data = recentFeeds.map(f => (f.distance / 100).toFixed(2));
+    distanceChart.update('none');
 }
 
 /**
- * Update the timeline with recent detections
+ * Update the timeline with recent sightings
  */
 function updateTimeline(feeds) {
     const container = document.getElementById('timelineContainer');
-    if (!container) return;
+    const sightingFeeds = feeds.filter(f => f.motion === 1).reverse().slice(0, CONFIG.maxTimelineItems);
     
-    const recentFeeds = feeds
-        .filter(f => f.motion === 1)
-        .slice(0, CONFIG.maxTimelineItems)
-        .reverse();
-    
-    if (recentFeeds.length === 0) {
-        container.innerHTML = '<div class="loading">Awaiting activity...</div>';
+    if (sightingFeeds.length === 0) {
+        container.innerHTML = '<div class="loading-placeholder">Awaiting sensor data...</div>';
         return;
     }
-    
-    container.innerHTML = recentFeeds.map(createTimelineItem).join('');
+    container.innerHTML = sightingFeeds.map(createTimelineItem).join('');
 }
 
 /**
- * Show a no-data message
- */
-function showNoDataMessage(message) {
-    const container = document.querySelector('.main-grid');
-    if (!container) return;
-
-    hideNoDataMessage();
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.id = 'noDataMessage';
-    messageDiv.className = 'card no-data-message';
-    messageDiv.innerHTML = `
-        <div class="no-data-content">
-            <i class="fas fa-info-circle"></i>
-            <p>${message}</p>
-            <small>This is normal if your ESP32 hasn't sent any data yet.</small>
-        </div>
-    `;
-    
-    container.parentNode.insertBefore(messageDiv, container);
-}
-
-function hideNoDataMessage() {
-    const message = document.getElementById('noDataMessage');
-    if (message) message.remove();
-}
-
-/**
- * Create HTML for a timeline item
+ * Create HTML for a single timeline item
  */
 function createTimelineItem(feed) {
-    const isValid = feed.is_valid_detection;
-    const isFalsePositive = feed.false_positive;
-    const animal = feed.animal_type || 'Unknown';
-    const distance = feed.distance > 0 ? `${feed.distance.toFixed(1)} cm` : 'N/A';
-    const timeOfDay = feed.time_of_day || 'Unknown';
+    const { is_valid_detection, false_positive, animal_type, distance, time_of_day, timestamp, entry_id } = feed;
     
-    let statusClass = 'no-motion';
-    let icon = 'fa-question-circle';
-    let title = 'Motion Detected';
+    let statusClass = 'no-motion', icon = 'fa-question-circle', title = 'Motion Detected';
 
-    if (isFalsePositive) {
+    if (false_positive) {
         statusClass = 'false-positive';
         icon = 'fa-exclamation-triangle';
         title = 'False Positive';
-    } else if (isValid) {
+    } else if (is_valid_detection) {
         statusClass = 'valid';
-        icon = 'fa-paw';
-        title = animal;
+        icon = CONFIG.animalIcons[animal_type] || 'fa-paw';
+        title = animal_type;
     }
     
     return `
-        <div class="timeline-item ${statusClass}">
-            <div class="timeline-icon">
-                <i class="fas ${icon}"></i>
-            </div>
+        <div class="timeline-item ${statusClass}" data-entry-id="${entry_id}">
+            <div class="timeline-icon"><i class="fas ${icon}"></i></div>
             <div class="timeline-content">
                 <h4>${title}</h4>
-                <p>Proximity: ${distance} | Environment: ${timeOfDay}</p>
+                <p>${(distance / 100).toFixed(1)}m | ${time_of_day}</p>
             </div>
-            <div class="timeline-time">${formatTimestamp(feed.timestamp)}</div>
+            <div class="timeline-time">${formatTimestamp(timestamp)}</div>
         </div>
     `;
 }
 
 /**
- * Update the latest detection card
+ * Handle clicks on the timeline
  */
-function updateLatestDetection(feed) {
-    const latestAnimal = document.getElementById('latestAnimal');
-    const latestDistance = document.getElementById('latestDistance');
-    const latestTimeOfDay = document.getElementById('latestTimeOfDay');
-    const latestStatus = document.getElementById('latestStatus');
-    const latestTimestamp = document.getElementById('latestTimestamp');
+function handleTimelineClick(event) {
+    const item = event.target.closest('.timeline-item');
+    if (item && item.dataset.entryId) {
+        updateSelectedSighting(parseInt(item.dataset.entryId));
+    }
+}
 
-    if (!feed) {
-        latestAnimal.textContent = 'Awaiting data...';
-        latestDistance.textContent = '--';
-        latestTimeOfDay.textContent = '--';
-        latestStatus.textContent = '--';
-        latestTimestamp.textContent = '--';
-        return;
-    }
-    
-    let status = 'Low';
-    if (feed.false_positive) {
+/**
+ * Update the "Selected Sighting" card
+ */
+function updateSelectedSighting(entryId) {
+    const feed = allFeeds.find(f => f.entry_id === entryId);
+    if (!feed) return;
+
+    // Update active state in timeline
+    document.querySelectorAll('.timeline-item').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.entryId) === entryId);
+    });
+
+    const { animal_type, distance, time_of_day, timestamp, false_positive, is_valid_detection } = feed;
+
+    let status = 'Unknown', statusClass = 'unknown';
+    if (false_positive) {
         status = 'False Positive';
-    } else if (feed.is_valid_detection) {
+        statusClass = 'false-positive';
+    } else if (is_valid_detection) {
         status = 'Confirmed';
+        statusClass = 'confirmed';
     }
+
+    document.getElementById('selectedTimestamp').textContent = formatTimestamp(timestamp);
+    document.getElementById('selectedAnimalIcon').innerHTML = `<i class="fas ${CONFIG.animalIcons[animal_type] || 'fa-question'}"></i>`;
+    document.getElementById('selectedAnimalName').textContent = animal_type;
+    document.getElementById('selectedDistance').textContent = `${(distance / 100).toFixed(1)} m`;
+    document.getElementById('selectedTimeOfDay').textContent = time_of_day;
     
-    latestAnimal.textContent = feed.animal_type || 'Unknown';
-    latestDistance.textContent = feed.distance > 0 ? `${feed.distance.toFixed(1)} cm` : 'N/A';
-    latestTimeOfDay.textContent = feed.time_of_day || 'Unknown';
-    latestStatus.textContent = status;
-    latestTimestamp.textContent = formatTimestamp(feed.timestamp);
+    const statusEl = document.getElementById('selectedStatus');
+    statusEl.textContent = status;
+    statusEl.className = `status-badge ${statusClass}`;
+}
+
+function clearSelectedSighting() {
+    document.getElementById('selectedTimestamp').textContent = '--';
+    document.getElementById('selectedAnimalIcon').innerHTML = `<i class="fas fa-question"></i>`;
+    document.getElementById('selectedAnimalName').textContent = 'Awaiting Data';
+    document.getElementById('selectedDistance').textContent = '--';
+    document.getElementById('selectedTimeOfDay').textContent = '--';
+    const statusEl = document.getElementById('selectedStatus');
+    statusEl.textContent = '--';
+    statusEl.className = 'status-badge';
 }
 
 /**
  * Update connection status indicator
  */
 function updateStatus(status, text) {
-    const indicator = document.getElementById('statusIndicator');
-    const dot = indicator.querySelector('.status-dot');
+    const dot = document.querySelector('#statusIndicator .status-dot');
     const textEl = document.getElementById('statusText');
-    
-    dot.className = 'status-dot ' + status;
-    textEl.textContent = text;
+    if(dot) dot.className = 'status-dot ' + status;
+    if(textEl) textEl.textContent = text;
 }
 
 /**
@@ -409,23 +283,17 @@ function updateStatus(status, text) {
  */
 function formatTimestamp(timestamp, short = false) {
     if (!timestamp) return '--';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return timestamp;
     
-    try {
-        const date = new Date(timestamp);
-        if (isNaN(date.getTime())) return timestamp;
-        
-        if (short) {
-            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        }
+    if (short) return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-        const now = new Date();
-        const diffMins = Math.floor((now - date) / 60000);
-        
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins} min ago`;
-        
-        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    } catch (error) {
-        return timestamp;
-    }
+    const now = new Date();
+    const diffMins = Math.round((now - date) / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffMins < 1440) return `${Math.round(diffMins/60)}h ago`;
+    
+    return date.toLocaleDateString();
 }

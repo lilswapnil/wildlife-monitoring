@@ -16,11 +16,9 @@ CORS(app)
 # Animal type mapping (reverse of main.py)
 ANIMAL_MAP = {
     0: "Unknown",
-    1: "Bison",
-    2: "Grizzly Bear",
-    3: "Mountain Lion",
-    4: "Elk",
-    5: "Wolf"
+    1: "Fox", 2: "Badger", 3: "Deer", 4: "Squirrel", 5: "Rabbit",
+    6: "Hedgehog", 7: "Owl", 8: "Woodpecker", 9: "Boar", 10: "Bear",
+    11: "Raccoon", 12: "Skunk", 13: "Lynx", 14: "Wolf", 15: "Moose",
 }
 
 # Try to load credentials, fallback to environment variables
@@ -94,7 +92,8 @@ def parse_feeds(feeds: List[Dict]) -> List[Dict]:
             animal_type = ANIMAL_MAP.get(animal_code, "Unknown")
             
             parsed.append({
-                'timestamp': feed.get('created_at', feed.get('entry_id', '')),
+                'entry_id': feed.get('entry_id'),
+                'timestamp': feed.get('created_at'),
                 'motion': motion,
                 'distance': distance,
                 'light_level': light_level,
@@ -125,15 +124,14 @@ def get_data():
     Returns:
         JSON response with channel info and parsed feeds
     """
-    data = fetch_thingspeak_data(results=100)
+    data = fetch_thingspeak_data(results=200) # Fetch more results for better timeline
     
     if not data:
         return jsonify({
             'error': 'Unable to fetch data. Please check your ThingSpeak configuration.',
             'channel': None,
             'feeds': [],
-            'total_count': 0
-        }), 200  # Return 200 even with error so frontend can handle it
+        }), 200
     
     feeds = data.get('feeds', [])
     parsed_feeds = parse_feeds(feeds)
@@ -141,7 +139,6 @@ def get_data():
     return jsonify({
         'channel': data.get('channel', {}),
         'feeds': parsed_feeds,
-        'total_count': len(parsed_feeds)
     })
 
 
@@ -243,7 +240,7 @@ if __name__ == '__main__':
         print("   The app will run but won't be able to fetch data.")
     
     # Get port from environment variable or use default 5001 (5000 is often used by AirPlay on macOS)
-    port = int(os.getenv('PORT', 5002))
+    port = int(os.getenv('PORT', 5001))
     
     print(f"🌐 Starting server on http://localhost:{port}")
     print(f"📊 Dashboard available at: http://localhost:{port}")

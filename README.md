@@ -1,254 +1,128 @@
-# 🦉 Smart Wildlife-Monitoring System  
+# 🌲 Forest Watch: Smart Wildlife Monitoring System
 
-[![Wokwi](https://img.shields.io/badge/Wokwi-Simulate-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
+[![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
 
-## 📖 Overview  
-The **Smart Wildlife Monitoring System** is an IoT-based solution designed to monitor animal activity using an ESP32 microcontroller and multiple sensors (PIR, ultrasonic, LDR). It intelligently detects motion, estimates animal size, determines activity periods (day/night), and uploads the data to **ThingSpeak** for visualization and analysis.  
-
-This system helps researchers and conservationists track wildlife patterns, prevent poaching, and study animal behavior with minimal human interference.  
+A sophisticated IoT solution for non-invasive wildlife tracking. This system uses an ESP32 and a suite of sensors to detect, identify, and monitor animal activity, sending real-time data to a sleek, interactive web dashboard.
 
 ---
 
-## ✨ Features  
-- 🕵️ **Motion Detection** using a PIR sensor  
-- 📏 **Distance Measurement** with an ultrasonic sensor  
-- 💡 **Light Level Analysis** using an LDR for day/night detection  
-- 🐾 **Animal Identification** (large, medium, small) with time-of-day activity classification  
-- 📤 **Cloud Integration** – sends data to ThingSpeak for visualization  
-- 🚨 **False Positive Filtering** using sensor fusion (distance + light)  
-- 📸 **Simulated Camera Trigger** for proof-of-concept image capture  
-- 🌐 **Web Dashboard** – Beautiful real-time visualization of wildlife detections  
+## 🎥 Live Demo
+
+https://github.com/lilswapnil/wildlife-monitoring/assets/168333395/2d83a333-2f89-45f5-981b-1d100222a0e9
 
 ---
 
-## 🏗️ Hardware Setup  
-
-| Component          | ESP32 Pin | Description |
-|--------------------|-----------|-------------|
-| PIR Sensor (OUT)   | GPIO 13   | Detects motion |
-| Ultrasonic Trigger | GPIO 14   | Sends sound pulses |
-| Ultrasonic Echo    | GPIO 12   | Receives reflected pulses |
-| LDR Sensor (ADC)   | GPIO 34   | Reads light level |
+## ✨ Core Features
+- **Interactive Dashboard:** A sleek, dual-column interface showing live stats and an interactive sighting timeline.
+- **Real-time Simulation:** Uses Wokwi to simulate a full hardware setup, allowing for testing without physical components.
+- **15 Simulated Species:** Randomly detects and identifies a diverse range of forest animals.
+- **Cloud Integration:** Seamlessly sends sensor data to ThingSpeak for logging and retrieval.
+- **Intelligent Sensing:** Fuses data from PIR, Ultrasonic, and LDR sensors to make informed detections.
+- **False Positive Rejection:** Smartly filters out irrelevant data to focus on genuine animal activity.
 
 ---
 
-## 🚀 Getting Started  
+## 🛠️ Tech Stack & Hardware
 
-## 🤖 Wokwi Simulation
+| Category      | Technology / Component |
+|---------------|------------------------|
+| **Firmware**  | MicroPython on ESP32   |
+| **Backend**   | Flask (Python)         |
+| **Frontend**  | HTML, CSS, JavaScript  |
+| **Charting**  | Chart.js               |
+| **Cloud**     | ThingSpeak             |
+| **Sensors**   | PIR, Ultrasonic, LDR   |
+| **Simulation**| Wokwi                  |
 
-You can test this project without any physical hardware using the Wokwi simulator.
+---
 
-**[▶️ Click here to open the project in Wokwi](https://wokwi.com/projects/447393208559834113)**
+## 🚀 Getting Started
 
-The simulation is pre-configured with the ESP32, PIR sensor, ultrasonic sensor, and LDR. When you run the simulation, the ESP32 will connect to the Wokwi WiFi and start sending data to the default ThingSpeak channel.
+This project is designed to be run entirely through simulation. No physical hardware is required.
 
-You can interact with the sensors in the simulation:
-*   **PIR Sensor:** Click on it to simulate motion.
-*   **Ultrasonic Sensor:** Adjust the slider to change the distance.
-*   **LDR Sensor:** Adjust the slider to change the light level.
+### 1. Open in Wokwi
+Click the link below to open the pre-configured simulation environment. The ESP32, sensors, and wiring are all set up.
 
-### 1. Clone the Repository  
+**[▶️ Simulate the Project on Wokwi](https://wokwi.com/projects/447393208559834113)**
+
+<p align="center">
+  <img src="assets/wokwi-setup.png" alt="Wokwi Simulation Setup" width="700">
+</p>
+
+### 2. Run the Local Web Dashboard
+
+**Clone the repository:**
 ```bash
 git clone https://github.com/lilswapnil/wildlife-monitoring.git
 cd wildlife-monitoring
 ```
 
-### 2. Set Up Virtual Environment
-
-Create and activate a virtual environment to keep dependencies isolated:
-
-**On macOS/Linux:**
+**Set up the environment:**
 ```bash
+# Create and activate a virtual environment
 python3 -m venv venv
 source venv/bin/activate
-```
 
-**On Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-### 3. Install Requirements
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 4. Configure Secrets
-
-Create a `credentials.py` file from the example:
-
+**Configure ThingSpeak Credentials:**
+Create a `credentials.py` file from the example and add your ThingSpeak Channel ID and Read API Key.
 ```bash
 cp credentials.py.example credentials.py
 ```
+*You can find your keys under the "API Keys" tab in your ThingSpeak channel.*
 
-Then edit `credentials.py` and add your ThingSpeak credentials. You can skip the WiFi credentials, as Wokwi handles the connection automatically.
-
-**ThingSpeak Credentials:**
-- **THINGSPEAK_READ_KEY**: Your ThingSpeak Read API Key (for web dashboard to fetch data)
-- **THINGSPEAK_CHANNEL_ID**: Your ThingSpeak Channel ID
-
-### 5. Run the Web Dashboard
-
-**Important:** Make sure your virtual environment is activated before running the app!
-
-**On macOS/Linux:**
+**Run the server:**
 ```bash
 ./run.sh
 ```
+Now, open your browser to **`http://localhost:5001`** to see the live dashboard.
 
-**On Windows:**
-```bash
-run.bat
-```
-
-Then open your browser and navigate to:
-```
-http://localhost:5001
-```
-
-The dashboard will automatically refresh to show the latest wildlife sightings from the Wokwi simulation!
-
+### 3. Start the Simulation
+Go back to your Wokwi browser tab and press the "play" button. Interact with the simulated sensors (click the PIR, drag the ultrasonic slider) and watch the data appear on your local dashboard in real-time!
 
 ---
 
-## 🧪 Testing Without ESP32 Hardware
+## ⚙️ ThingSpeak Channel Configuration
+For the dashboard to work correctly, your ThingSpeak channel must have **5 fields enabled**.
 
-If you want to test the dashboard without physical ESP32 hardware, you can use the test script to simulate data:
-
-```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Run test script to send sample data
-python test_send_data.py
-```
-
-This script will:
-- Send 5 sample wildlife detections to ThingSpeak
-- Include various animal types (Bison, Elk, Wolf, etc.)
-- Include some false positives for testing
-- Respect ThingSpeak's rate limits (1 update per 15 seconds)
-
-After running the script, refresh your dashboard to see the test data!
-
----
-
-## ⚙️ Configuration
-
-The `credentials.py` file should contain all your credentials:
-
-```python
-# credentials.py
-# WiFi Configuration (for ESP32)
-SSID = "YOUR_WIFI_SSID"              # Your WiFi network name
-PASSWORD = "YOUR_WIFI_PASSWORD"       # Your WiFi password
-
-# ThingSpeak Configuration
-THINGSPEAK_WRITE_KEY = "YOUR_THINGSPEAK_WRITE_API_KEY"  # For ESP32 to upload data
-
-# ThingSpeak Read Configuration (for web dashboard)
-THINGSPEAK_READ_KEY = "YOUR_THINGSPEAK_READ_API_KEY"    # For web app to fetch data
-THINGSPEAK_CHANNEL_ID = "YOUR_CHANNEL_ID"                # Your ThingSpeak channel ID
-```
-
-### 📡 Where to Find WiFi Credentials
-
-The WiFi SSID and password are for **your local WiFi network** that the ESP32 device will connect to. Here's where to find them:
-
-**Method 1: Check Your Current Connection**
-- **macOS**: 
-  - Click the WiFi icon in the menu bar → Your network name is shown at the top
-  - Or: System Settings → Network → WiFi → Network Name
-- **Windows**: 
-  - Settings → Network & Internet → WiFi → Your network name is shown
-- **Phone**: 
-  - Settings → WiFi → The network you're connected to is your SSID
-
-**Method 2: Check Your Router**
-- Look for a sticker on your router/modem
-- Usually shows: Network Name (SSID) and Password (WPA Key)
-- Format: `SSID: YourNetworkName` and `Password: YourPassword`
-
-**Method 3: Router Admin Panel**
-- Access your router's admin page (usually `192.168.1.1` or `192.168.0.1`)
-- Look for WiFi settings or Wireless settings
-- Find the SSID and password there
-
-**Important Notes:**
-- The ESP32 needs to be within range of this WiFi network
-- Use 2.4GHz WiFi (ESP32 doesn't support 5GHz)
-- Make sure the password is correct (case-sensitive)
-
-**Note:** The `credentials.py` file is already in `.gitignore` and will not be committed to GitHub. We use `credentials.py` instead of `secrets.py` to avoid conflicts with Python's built-in `secrets` module.
-
----
-
-## 📊 Data Sent to ThingSpeak
-
-* **Field1:** Motion detected (0/1)
-* **Field2:** Distance (cm)
-* **Field3:** Light level (0–4095)
-* **Field4:** False positive flag (0 = real, 1 = false)
-* **Field5:** Animal type (coded integer)
+1.  Go to your channel's **"Channel Settings"** tab.
+2.  Enable and name the fields as follows:
+    - `Field 1`: `motion`
+    - `Field 2`: `distance_cm`
+    - `Field 3`: `light_level`
+    - `Field 4`: `false_positive`
+    - `Field 5`: `animal_id`
+3.  Click **"Save Channel"**.
 
 ---
 
 ## 📂 Project Structure
-
 ```
 wildlife-monitoring/
-│── main.py              # ESP32 firmware (MicroPython)
-│── app.py               # Flask web application
-│── requirements.txt     # Python dependencies
-│── credentials.py           # Credentials (ignored in git)
-│── credentials.py.example  # Example credentials file
-│── templates/
-│   └── index.html       # Web dashboard HTML
-│── static/
-│   ├── css/
-│   │   └── style.css    # Dashboard styles
-│   └── js/
-│       └── app.js       # Frontend JavaScript
-│── README.md            # This file
+│
+├── main.py              # ESP32 firmware (MicroPython)
+├── app.py               # Flask web application backend
+│
+├── templates/
+│   └── index.html       # Dashboard HTML structure
+│
+├── static/
+│   ├── css/style.css    # Dashboard styling
+│   └── js/app.js        # Frontend logic and interactivity
+│
+├── assets/
+│   ├── demo.mov         # Project demo video
+│   └── wokwi-setup.png  # Wokwi setup image
+│
+├── credentials.py.example # Example for credentials
+├── requirements.txt     # Python dependencies
+└── README.md            # This file
 ```
-
----
-
-## 🖼️ System Architecture 
-
-<p align="center">
-  <img src="assets/diagram.png" alt="System diagram: Wildlife monitoring flow" width="600">
-  <br/>
-  <em>High-level flow of the ESP32-based Smart Wildlife Monitoring System.</em>
-</p>
-
-
----
-
-## 🔮 Future Enhancements
-
-* Add **real camera support** (ESP32-CAM)
-* Deploy **ML models** for species recognition
-* Integrate with **mobile app/dashboard** for live alerts
-* Support **LoRaWAN/Edge AI** for remote monitoring
-
----
-
-## 🤝 Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you’d like to change.
 
 ---
 
 ## 📜 License
-
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-
----
-
-## 👨‍💻 Author
-
-**Swapnil Bhalerao**
-🔗 [GitHub Profile](https://github.com/lilswapnil)

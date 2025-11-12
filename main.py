@@ -117,70 +117,50 @@ def is_false_positive(distance, light_level):
     # No false positive detected
     return False
 
+# --- Animal Simulation Logic ---
+# List of 15 potential animals to be detected in the forest environment.
+# The ID corresponds to the key in the ANIMAL_CHARACTERISTICS dictionary.
+ANIMAL_LIST = [
+    {"id": 1, "name": "Fox"}, {"id": 2, "name": "Badger"}, {"id": 3, "name": "Deer"},
+    {"id": 4, "name": "Squirrel"}, {"id": 5, "name": "Rabbit"}, {"id": 6, "name": "Hedgehog"},
+    {"id": 7, "name": "Owl"}, {"id": 8, "name": "Woodpecker"}, {"id": 9, "name": "Boar"},
+    {"id": 10, "name": "Bear"}, {"id": 11, "name": "Raccoon"}, {"id": 12, "name": "Skunk"},
+    {"id": 13, "name": "Lynx"}, {"id": 14, "name": "Wolf"}, {"id": 15, "name": "Moose"},
+]
+
+# This dictionary maps the animal ID to its name for easy lookup.
+ANIMAL_CHARACTERISTICS = {
+    1: "Fox", 2: "Badger", 3: "Deer", 4: "Squirrel", 5: "Rabbit",
+    6: "Hedgehog", 7: "Owl", 8: "Woodpecker", 9: "Boar", 10: "Bear",
+    11: "Raccoon", 12: "Skunk", 13: "Lynx", 14: "Wolf", 15: "Moose",
+    0: "Unknown",
+}
+
 def identify_animal(distance, light_level):
-    # Size categorization based on distance
-    if distance < 150:
-        size = "large"
-    elif distance < 300:
-        size = "medium"
-    else:
-        size = "small"
+    """
+    Identifies an animal.
+    For this simulation, it randomly selects an animal from the list if the distance is valid.
+    """
+    # A valid detection is considered to be within a reasonable range.
+    # We ignore light_level for this simplified random simulation.
+    if 5 <= distance <= 450:
+        # Select a random animal from our list of 15.
+        detected_animal = random.choice(ANIMAL_LIST)
+        return detected_animal["id"]
     
-    if light_level < 1000:  # Night
-        time_of_day = "nocturnal"
-    elif light_level > 3000:  # Day
-        time_of_day = "diurnal"
-    else:  # Dawn/dusk
-        time_of_day = "crepuscular"
-    
-    # Identify animal based on size and activity period
-    if size == "large":
-        if time_of_day == "diurnal":
-            return "Bison"
-        elif time_of_day == "crepuscular":
-            return "Grizzly Bear"
-        else:  # nocturnal
-            return "Grizzly Bear"  
-            
-    elif size == "medium":
-        if time_of_day == "nocturnal":
-            return "Mountain Lion"
-        elif time_of_day == "crepuscular":
-            return "Elk"
-        else:  # diurnal
-            return "Elk"  
-            
-    else:  # small
-        if time_of_day == "diurnal":
-            return "Wolf"
-        elif time_of_day == "crepuscular":
-            return "Wolf"  
-        else:  # nocturnal
-            return "Mountain Lion"
+    # If distance is out of range, it's considered an invalid or unknown detection.
+    return 0 # Unknown
 
 # Upload to ThingSpeak with all data
-def upload_to_thingspeak(motion, distance, light_level, animal_type, is_false_pos):
+def upload_to_thingspeak(motion, distance, light_level, animal_id, is_false_pos):
     """
     Upload all data to ThingSpeak
     field1: Motion (0 or 1)
     field2: Distance (cm)
     field3: Light Level
     field4: False Positive (0 = real detection, 1 = false positive)
-    field5: Animal Type (encoded as a number)
+    field5: Animal ID (encoded as a number)
     """
-    # Encode animal type as a number for ThingSpeak
-    animal_map = {
-        "Bison": 1, 
-        "Grizzly Bear": 2, 
-        "Mountain Lion": 3,
-        "Elk": 4, 
-        "Wolf": 5,
-        "Unknown": 0
-    }
-    
-    # Convert animal name to number code
-    animal_code = animal_map.get(animal_type, 0)
-    
     # Convert boolean false positive flag to 0/1
     false_positive_flag = 1 if is_false_pos else 0
     
@@ -191,7 +171,7 @@ def upload_to_thingspeak(motion, distance, light_level, animal_type, is_false_po
         "field2": distance,
         "field3": light_level,
         "field4": false_positive_flag,
-        "field5": animal_code
+        "field5": animal_id
     }
     
     try:
@@ -230,14 +210,15 @@ while True:
         # Check if detection is a false positive
         false_positive = is_false_positive(distance, light_level)
         
-        # Default animal type
-        animal_type = "Unknown"
+        # Default animal ID
+        animal_id = 0
         
         # Only identify animal if not a false positive
         if not false_positive:
             # Valid detection - identify the animal
-            animal_type = identify_animal(distance, light_level)
-            print(f"Valid wildlife detection! Likely a {animal_type}")
+            animal_id = identify_animal(distance, light_level)
+            animal_name = ANIMAL_CHARACTERISTICS.get(animal_id, "Unknown")
+            print(f"Valid wildlife detection! Likely a {animal_name}")
             camera_result = simulate_camera()
             print(camera_result)
         else:
@@ -248,7 +229,7 @@ while True:
             motion=1, 
             distance=distance, 
             light_level=light_level, 
-            animal_type=animal_type,
+            animal_id=animal_id,
             is_false_pos=false_positive
         )
     else:
@@ -258,7 +239,7 @@ while True:
                 motion=0,
                 distance=0,
                 light_level=4095 - analog.read(),
-                animal_type="Unknown",
+                animal_id=0,
                 is_false_pos=False
             )
     
