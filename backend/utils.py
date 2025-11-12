@@ -1,6 +1,6 @@
 # backend/utils.py
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 import pytz
 
 # Animal name mapping from the firmware
@@ -11,54 +11,56 @@ ANIMAL_NAMES = {
     0: "Unknown",
 }
 
-def get_thingspeak_data(channel_id, api_key):
+def fetch_new_thingspeak_data(channel_id, api_key, last_entry_id):
     """
-    Fetches the last 2500 entries from the ThingSpeak channel.
+    Fetches only new entries from ThingSpeak since the last known entry ID.
     """
     url = f"https://api.thingspeak.com/channels/{channel_id}/feeds.json"
     params = {
         "api_key": api_key,
-        "results": 2500  # Fetch a larger number of results
+        "results": 2500 
     }
+    print(f"Fetching data from ThingSpeak starting after entry_id: {last_entry_id}")
     try:
         response = requests.get(url, params=params)
-        response.raise_for_status()  # Raise an exception for bad status codes
-        return response.json()
+        response.raise_for_status()
+        data = response.json()
+        
+        # Filter out feeds we already have
+        new_feeds = [feed for feed in data.get('feeds', []) if int(feed['entry_id']) > last_entry_id]
+        print(f"Found {len(new_feeds)} new entries in ThingSpeak.")
+        return new_feeds
+        
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data from ThingSpeak: {e}")
         return None
-    except ValueError: # Catches JSON decoding errors
-        print("Error decoding JSON from ThingSpeak response.")
+    except (ValueError, KeyError) as e:
+        print(f"Error parsing ThingSpeak response: {e}")
         return None
 
-def process_all_feeds(data):
+def process_feeds_for_db(feeds):
     """
-    Processes raw ThingSpeak feed data into a structured list of dictionaries.
+    Processes raw ThingSpeak feed data into a structured format suitable for the database.
     """
-    if not data or 'feeds' not in data:
+    if not feeds:
         return []
 
     processed_feeds = []
-    for feed in data['feeds']:
+    for feed in feeds:
         try:
-            # Convert timestamp to a more usable format
             utc_time = datetime.strptime(feed['created_at'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.UTC)
             
-            # Determine time of day
             hour = utc_time.hour
             if 5 <= hour < 12: time_of_day = "Morning"
             elif 12 <= hour < 17: time_of_day = "Afternoon"
             elif 17 <= hour < 21: time_of_day = "Evening"
             else: time_of_day = "Night"
 
-            # Safely convert fields to numbers, defaulting to 0
             motion = int(feed.get('field1', 0) or 0)
             distance = float(feed.get('field2', 0) or 0)
             light = int(feed.get('field3', 0) or 0)
             is_false_positive = bool(int(feed.get('field4', 0) or 0))
             animal_id = int(feed.get('field5', 0) or 0)
-
-            # A detection is valid if it's not a false positive and an animal was identified
             is_valid_detection = not is_false_positive and animal_id != 0
 
             processed_feeds.append({
@@ -73,15 +75,16 @@ def process_all_feeds(data):
                 "is_valid_detection": is_valid_detection,
                 "time_of_day": time_of_day,
             })
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, KeyError) as e:
             print(f"Skipping malformed feed entry {feed.get('entry_id', 'N/A')}: {e}")
             continue
             
     return processed_feeds
 
-def calculate_dashboard_stats(feeds):
+def calculate_dashboard_data(feeds):
     """
     Calculates all statistics and chart data from the processed feeds.
+    This function now expects feeds already retrieved from our local DB.
     """
     valid_detections = [f for f in feeds if f['is_valid_detection']]
     

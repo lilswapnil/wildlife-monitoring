@@ -1,12 +1,12 @@
-"""
-Wildlife Monitoring Web Application
-Flask backend for visualizing ThingSpeak data
-"""
 from flask import Flask, render_template, jsonify
+from dotenv import load_dotenv
 import requests
 import os
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -18,12 +18,9 @@ ANIMAL_MAP = {
     10: "Bear", 11: "Raccoon", 12: "Skunk", 13: "Lynx", 14: "Wolf", 15: "Moose",
 }
 
-# Try to load credentials, fallback to environment variables
-try:
-    from credentials import THINGSPEAK_READ_KEY, THINGSPEAK_CHANNEL_ID
-except ImportError:
-    THINGSPEAK_READ_KEY = os.getenv('THINGSPEAK_READ_KEY', '')
-    THINGSPEAK_CHANNEL_ID = os.getenv('THINGSPEAK_CHANNEL_ID', '')
+# Load credentials from environment variables
+THINGSPEAK_READ_KEY = os.getenv('THINGSPEAK_READ_KEY')
+THINGSPEAK_CHANNEL_ID = os.getenv('THINGSPEAK_CHANNEL_ID')
 
 THINGSPEAK_API_URL = f"https://api.thingspeak.com/channels/{THINGSPEAK_CHANNEL_ID}/feeds.json"
 
@@ -32,7 +29,7 @@ THINGSPEAK_API_URL = f"https://api.thingspeak.com/channels/{THINGSPEAK_CHANNEL_I
 def fetch_thingspeak_data(results: int = 8000) -> Optional[List[Dict]]:
     """Fetch raw data from the ThingSpeak channel."""
     if not THINGSPEAK_READ_KEY or not THINGSPEAK_CHANNEL_ID:
-        print("Error: ThingSpeak credentials not found.")
+        print("Error: ThingSpeak credentials not found in environment variables.")
         return None
     
     try:
@@ -47,12 +44,14 @@ def fetch_thingspeak_data(results: int = 8000) -> Optional[List[Dict]]:
 def parse_and_enrich_feed(feed: Dict) -> Optional[Dict]:
     """Parse a single feed entry and enrich it with computed data."""
     try:
+        # Safely get and convert fields, providing default values
         motion = int(feed.get('field1', 0) or 0)
         distance = float(feed.get('field2', 0) or 0)
         light_level = int(feed.get('field3', 0) or 0)
         false_positive = int(feed.get('field4', 0) or 0)
         animal_code = int(feed.get('field5', 0) or 0)
 
+        # Determine time of day based on light level
         if light_level < 1000: time_of_day = "Night"
         elif light_level > 3000: time_of_day = "Day"
         else: time_of_day = "Dawn/Dusk"
@@ -67,13 +66,14 @@ def parse_and_enrich_feed(feed: Dict) -> Optional[Dict]:
             'animal_type': ANIMAL_MAP.get(animal_code, "Unknown"),
             'animal_code': animal_code,
             'time_of_day': time_of_day,
-            'is_valid_detection': motion == 1 and not bool(false_positive)
+            'is_valid_detection': motion == 1 and not bool(false_positive) and animal_code != 0
         }
-    except (ValueError, TypeError, KeyError):
+    except (ValueError, TypeError, KeyError) as e:
+        print(f"Skipping malformed feed entry: {e}")
         return None
 
 def process_all_feeds(feeds: List[Dict]) -> List[Dict]:
-    """Parse and enrich a list of raw feeds."""
+    """Parse and enrich a list of raw feeds, filtering out any that fail parsing."""
     parsed_feeds = [parse_and_enrich_feed(f) for f in feeds]
     return [f for f in parsed_feeds if f is not None]
 
@@ -82,8 +82,7 @@ def calculate_dashboard_stats(parsed_feeds: List[Dict]) -> Dict[str, Any]:
     valid_detections = [f for f in parsed_feeds if f['is_valid_detection']]
     
     # Basic Stats
-    total_detections = len([f for f in parsed_feeds if f['motion'] == 1])
-    false_positives = total_detections - len(valid_detections)
+    total_motion_events = len([f for f in parsed_feeds if f['motion'] == 1])
     
     # Animal Counts for Pie Chart
     animal_counts = {}
@@ -92,7 +91,7 @@ def calculate_dashboard_stats(parsed_feeds: List[Dict]) -> Dict[str, Any]:
         animal_counts[animal] = animal_counts.get(animal, 0) + 1
     
     # Time of Day Distribution for Doughnut Chart
-    time_distribution = {}
+    time_distribution = {"Day": 0, "Night": 0, "Dawn/Dusk": 0}
     for feed in valid_detections:
         tod = feed['time_of_day']
         time_distribution[tod] = time_distribution.get(tod, 0) + 1
@@ -109,9 +108,9 @@ def calculate_dashboard_stats(parsed_feeds: List[Dict]) -> Dict[str, Any]:
 
     return {
         "stats": {
-            "total_detections": total_detections,
+            "total_detections": total_motion_events,
             "valid_detections": len(valid_detections),
-            "false_positives": false_positives,
+            "false_positives": total_motion_events - len(valid_detections),
             "animal_types": len(animal_counts),
             "average_distance": avg_distance,
         },
@@ -142,7 +141,7 @@ def get_dashboard_data():
     raw_feeds = fetch_thingspeak_data(results=8000)
     
     if raw_feeds is None:
-        return jsonify({'error': 'Failed to fetch data from ThingSpeak.'}), 500
+        return jsonify({'error': 'Failed to fetch data from ThingSpeak. Check credentials and network.'}), 502
         
     parsed_feeds = process_all_feeds(raw_feeds)
     dashboard_data = calculate_dashboard_stats(parsed_feeds)
@@ -150,11 +149,11 @@ def get_dashboard_data():
     return jsonify(dashboard_data)
 
 if __name__ == '__main__':
-    if not THINGSPEAK_READ_KEY or not THINGSPEAK_CHANNEL_ID:
-        print("⚠️  Warning: ThingSpeak credentials not configured!")
-        print("   Please create `credentials.py` or set environment variables.")
+    if not THINGSPEAK_READ_KEY or not THINGSPEAK_CHANNEL_ID or "YOUR_" in THINGSPEAK_READ_KEY:
+        print("⚠️  Warning: ThingSpeak credentials are not configured correctly!")
+        print("   Please create a `.env` file and add your THINGSPEAK_CHANNEL_ID and THINGSPEAK_READ_KEY.")
     
-    port = int(os.getenv('PORT', 5001))
+    port = int(os.getenv('PORT', 5009))
     print(f"🌐 Starting Forest Watch server on http://localhost:{port}")
     app.run(debug=True, host='0.0.0.0', port=port)
 

@@ -1,128 +1,341 @@
-# 🌲 Smart Wildlife Monitoring System: Forest Watch
+# 🌲 Forest Watch: AI-Powered Wildlife Monitoring System
 
 [![Wokwi](https://img.shields.io/badge/Wokwi-Simulate%20Live-blue?logo=wokwi)](https://wokwi.com/projects/447393208559834113)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A sophisticated IoT solution for non-invasive wildlife tracking. This system uses an ESP32 and a suite of sensors to detect, identify, and monitor animal activity, sending real-time data to a sleek, interactive web dashboard.
-
----
-
-## 🎥 Live Demo
-
-https://github.com/lilswapnil/wildlife-monitoring/assets/168333395/2d83a333-2f89-45f5-981b-1d100222a0e9
+A production-grade IoT wildlife monitoring system with a backend-heavy architecture. Features intelligent sensor fusion, real-time data processing, local database persistence, and a modern interactive dashboard for tracking 15 different animal species.
 
 ---
 
-## ✨ Core Features
-- **Interactive Dashboard:** A sleek, dual-column interface showing live stats and an interactive sighting timeline.
-- **Real-time Simulation:** Uses Wokwi to simulate a full hardware setup, allowing for testing without physical components.
-- **15 Simulated Species:** Randomly detects and identifies a diverse range of forest animals.
-- **Cloud Integration:** Seamlessly sends sensor data to ThingSpeak for logging and retrieval.
-- **Intelligent Sensing:** Fuses data from PIR, Ultrasonic, and LDR sensors to make informed detections.
-- **False Positive Rejection:** Smartly filters out irrelevant data to focus on genuine animal activity.
+## 🎥 Project Demo
+
+![Dashboard Demo](assets/dashboard-result.png)
+
+*The Forest Watch dashboard displaying real-time wildlife detection data with interactive timeline and analytics.*
 
 ---
 
-## 🛠️ Tech Stack & Hardware
+## ✨ Key Features
 
-| Category      | Technology / Component |
-|---------------|------------------------|
-| **Firmware**  | MicroPython on ESP32   |
-| **Backend**   | Flask (Python)         |
-| **Frontend**  | HTML, CSS, JavaScript  |
-| **Charting**  | Chart.js               |
-| **Cloud**     | ThingSpeak             |
-| **Sensors**   | PIR, Ultrasonic, LDR   |
-| **Simulation**| Wokwi                  |
+### 🔧 Backend Architecture
+- **Backend-Heavy Design:** SQLite database for efficient local data persistence and caching
+- **Smart Data Sync:** Intelligent synchronization with ThingSpeak, fetching only new entries
+- **RESTful API:** Single consolidated endpoint serving all dashboard data
+- **Modular Codebase:** Clean separation between database, utilities, and application logic
+
+### 🦊 Wildlife Detection
+- **15 Animal Species:** Fox, Badger, Deer, Squirrel, Rabbit, Hedgehog, Owl, Woodpecker, Boar, Bear, Raccoon, Skunk, Lynx, Wolf, Moose
+- **Intelligent Identification:** Time-of-day aware animal detection (nocturnal, diurnal, crepuscular)
+- **Multi-Sensor Fusion:** Combines PIR motion, ultrasonic distance, and LDR light sensors
+- **False Positive Filtering:** Advanced logic to reduce invalid detections
+
+### 📊 Dashboard & Visualization
+- **Real-Time Updates:** Auto-refreshing dashboard with live data
+- **Interactive Timeline:** Click on any sighting to view detailed information
+- **Rich Analytics:** Animal distribution, time-of-day patterns, proximity tracking
+- **Modern UI:** Forest-themed design with responsive layout
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer          | Technology                          |
+|----------------|-------------------------------------|
+| **Hardware**   | ESP32 (Wokwi Simulation)           |
+| **Firmware**   | MicroPython                         |
+| **Sensors**    | PIR Motion, HC-SR04 Ultrasonic, LDR |
+| **Backend**    | Python, Flask, SQLite               |
+| **Cloud**      | ThingSpeak IoT Platform             |
+| **Frontend**   | HTML5, CSS3, Vanilla JavaScript     |
+| **Charting**   | Chart.js                            |
+| **Libraries**  | python-dotenv, requests, pytz       |
+
+---
+
+## 📂 Project Structure
+
+The project follows a professional, modular architecture with clear separation of concerns:
+
+```
+wildlife-monitoring/
+│
+├── 📄 app.py                    # Main Flask application entry point
+├── 📄 requirements.txt          # Python dependencies
+├── 📄 wokwi.toml               # Wokwi simulator configuration
+├── 📄 diagram.json             # Wokwi circuit diagram
+├── 📄 .env                     # Environment variables (YOUR CREDENTIALS)
+├── 📄 .env.example             # Template for environment variables
+├── 📄 .gitignore
+├── 📄 LICENSE
+├── 📄 README.md
+│
+├── 📁 backend/                 # Backend logic and data layer
+│   ├── database.py             # SQLite database operations
+│   └── utils.py                # ThingSpeak API & data processing
+│
+├── 📁 firmware/                # ESP32 device code
+│   ├── main.py                 # MicroPython entry point
+│   ├── config.py               # Hardware configuration & constants
+│   ├── credentials.py          # WiFi & ThingSpeak keys (device-side)
+│   └── credentials.py.example  # Template for device credentials
+│
+├── 📁 static/                  # Frontend assets
+│   ├── css/
+│   │   └── style.css           # Dashboard styling
+│   └── js/
+│       └── app.js              # Frontend logic and API calls
+│
+├── 📁 templates/               # HTML templates
+│   └── index.html              # Main dashboard page
+│
+└── 📁 assets/                  # Documentation media
+    ├── dashboard-result.png    # Dashboard screenshot
+    ├── dashboard-init.png      # Initial dashboard view
+    ├── wokwi.png              # Wokwi simulator screenshot
+    ├── diagram.png            # Circuit diagram
+    ├── ThingSpeak.png         # ThingSpeak configuration
+    └── demo.mov               # Video demonstration
+```
+
+### 📋 Key File Descriptions
+
+**Backend Layer:**
+- `app.py` - Flask application with routing and API endpoints
+- `backend/database.py` - Handles SQLite database initialization, sync, and queries
+- `backend/utils.py` - ThingSpeak API client and data processing functions
+
+**Firmware Layer:**
+- `firmware/main.py` - Main ESP32 firmware with sensor reading and animal identification
+- `firmware/config.py` - Centralized configuration for pins, thresholds, and animal characteristics
+
+**Frontend Layer:**
+- `templates/index.html` - Dashboard HTML structure
+- `static/css/style.css` - Forest-themed responsive design
+- `static/js/app.js` - Dashboard interactivity, API calls, and Chart.js integration
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────┐
+│  ESP32 (Wokwi)  │  ← Simulated Hardware
+│  Sensors: PIR,  │
+│  Ultrasonic,LDR │
+└────────┬────────┘
+         │ WiFi
+         ↓
+┌─────────────────┐
+│   ThingSpeak    │  ← Cloud IoT Platform
+│   Channel       │     (Data Logging)
+└────────┬────────┘
+         │ REST API
+         ↓
+┌─────────────────┐
+│  Flask Backend  │  ← Smart Sync Layer
+│  SQLite DB      │     (Local Cache)
+└────────┬────────┘
+         │ JSON API
+         ↓
+┌─────────────────┐
+│  Web Dashboard  │  ← User Interface
+│  (Browser)      │     (Visualization)
+└─────────────────┘
+```
+
+**Data Flow:**
+1. ESP32 reads sensor data and identifies wildlife
+2. Data is sent to ThingSpeak via HTTP POST
+3. Flask backend periodically syncs new data to local SQLite database
+4. Dashboard fetches data from backend's `/api/dashboard` endpoint
+5. Charts and timeline are updated in real-time
 
 ---
 
 ## 🚀 Getting Started
 
-This project is designed to be run entirely through simulation. No physical hardware is required.
+### Prerequisites
 
-### 1. Open in Wokwi
-Click the link below to open the pre-configured simulation environment. The ESP32, sensors, and wiring are all set up.
+- Python 3.8 or higher
+- A modern web browser (Chrome, Firefox, Safari, Edge)
+- A free [Wokwi](https://wokwi.com/) account
+- A free [ThingSpeak](https://thingspeak.com/) account
 
-**[▶️ Simulate the Project on Wokwi](https://wokwi.com/projects/447393208559834113)**
+---
+
+### Step 1: Set Up Wokwi Simulation
+
+The hardware simulation runs entirely in your browser using Wokwi.
+
+1. **Open the Project in Wokwi:**
+   
+   Click here: **[▶️ Launch Wokwi Simulator](https://wokwi.com/projects/447393208559834113)**
+
+2. **Configure Device Credentials:**
+   
+   In the Wokwi file explorer, create a new file `credentials.py` in the firmware folder with:
+   ```python
+   SSID = "Wokwi-GUEST"
+   PASSWORD = ""
+   THINGSPEAK_WRITE_KEY = "YOUR_WRITE_API_KEY"
+   ```
+
+3. **Start the Simulation:**
+   
+   Press the green **Play** button. The ESP32 will:
+   - Connect to WiFi
+   - Read sensor data
+   - Send detections to ThingSpeak every 15 seconds
 
 <p align="center">
-  <img src="assets/wokwi-setup.png" alt="Wokwi Simulation Setup" width="700">
+  <img src="assets/wokwi.png" alt="Wokwi Simulation" width="700">
 </p>
 
-### 2. Run the Local Web Dashboard
+---
 
-**Clone the repository:**
-```bash
-git clone https://github.com/lilswapnil/wildlife-monitoring.git
-cd wildlife-monitoring
-```
+### Step 2: Configure ThingSpeak Channel
 
-**Set up the environment:**
-```bash
-# Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate
+1. **Create a New Channel** on [ThingSpeak](https://thingspeak.com/)
 
-# Install dependencies
-pip install -r requirements.txt
-```
+2. **Enable 5 Fields** with these exact names:
+   - `Field 1`: **Motion**
+   - `Field 2`: **Distance**
+   - `Field 3`: **Light Level**
+   - `Field 4`: **False Positive**
+   - `Field 5`: **Animal ID**
 
-**Configure ThingSpeak Credentials:**
-Create a `credentials.py` file from the example and add your ThingSpeak Channel ID and Read API Key.
-```bash
-cp credentials.py.example credentials.py
-```
-*You can find your keys under the "API Keys" tab in your ThingSpeak channel.*
+3. **Save Channel Settings**
 
-**Run the server:**
-```bash
-./run.sh
-```
-Now, open your browser to **`http://localhost:5001`** to see the live dashboard.
+4. **Get Your API Keys:**
+   - Go to the **"API Keys"** tab
+   - Note your **Channel ID** and **Read API Key**
 
-### 3. Start the Simulation
-Go back to your Wokwi browser tab and press the "play" button. Interact with the simulated sensors (click the PIR, drag the ultrasonic slider) and watch the data appear on your local dashboard in real-time!
+<p align="center">
+  <img src="assets/ThingSpeak.png" alt="ThingSpeak Configuration" width="700">
+</p>
 
 ---
 
-## ⚙️ ThingSpeak Channel Configuration
-For the dashboard to work correctly, your ThingSpeak channel must have **5 fields enabled**.
+### Step 3: Set Up Local Backend
 
-1.  Go to your channel's **"Channel Settings"** tab.
-2.  Enable and name the fields as follows:
-    - `Field 1`: `motion`
-    - `Field 2`: `distance_cm`
-    - `Field 3`: `light_level`
-    - `Field 4`: `false_positive`
-    - `Field 5`: `animal_id`
-3.  Click **"Save Channel"**.
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/lilswapnil/wildlife-monitoring.git
+   cd wildlife-monitoring
+   ```
+
+2. **Create a Virtual Environment:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # macOS/Linux
+   # venv\Scripts\activate   # Windows
+   ```
+
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure Environment Variables:**
+   
+   Create a `.env` file in the project root:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and add your ThingSpeak credentials:
+   ```
+   THINGSPEAK_CHANNEL_ID="YOUR_CHANNEL_ID"
+   THINGSPEAK_READ_KEY="YOUR_READ_API_KEY"
+   ```
+
+5. **Run the Application:**
+   ```bash
+   python3 app.py
+   ```
+
+6. **Open the Dashboard:**
+   
+   Navigate to **http://localhost:5001** in your browser
+
+<p align="center">
+  <img src="assets/dashboard-init.png" alt="Dashboard Initial View" width="700">
+</p>
 
 ---
 
-## 📂 Project Structure
+## 🎮 Usage
+
+1. **Start the Wokwi simulation** - The ESP32 will begin detecting and sending data
+2. **Open the dashboard** in your browser
+3. **Click on any timeline item** to view detailed sighting information
+4. **Watch the charts update** as new data arrives from ThingSpeak
+
+The backend automatically syncs new data every time you refresh the dashboard, storing it locally for fast retrieval.
+
+---
+
+## 📊 Dashboard Features
+
+- **Statistics Cards:** Total detections, valid sightings, average distance, species count
+- **Animal Distribution:** Pie chart showing detected species
+- **Time of Day Analysis:** When animals are most active
+- **Proximity Timeline:** Line chart tracking distance over time
+- **Interactive Timeline:** Click any detection to see full details
+- **Live Status Indicator:** Connection status with ThingSpeak
+
+---
+
+## 🔧 Configuration
+
+### Backend Configuration (`.env`)
 ```
-wildlife-monitoring/
-│
-├── main.py              # ESP32 firmware (MicroPython)
-├── app.py               # Flask web application backend
-│
-├── templates/
-│   └── index.html       # Dashboard HTML structure
-│
-├── static/
-│   ├── css/style.css    # Dashboard styling
-│   └── js/app.js        # Frontend logic and interactivity
-│
-├── assets/
-│   ├── demo.mov         # Project demo video
-│   └── wokwi-setup.png  # Wokwi setup image
-│
-├── credentials.py.example # Example for credentials
-├── requirements.txt     # Python dependencies
-└── README.md            # This file
+THINGSPEAK_CHANNEL_ID="YOUR_CHANNEL_ID"
+THINGSPEAK_READ_KEY="YOUR_READ_API_KEY"
+PORT=5001  # Optional: Change server port
 ```
+
+### Firmware Configuration (`firmware/config.py`)
+- Sensor pin mappings
+- Detection thresholds
+- Simulation parameters
+- Animal characteristics and activity patterns
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📜 License
+
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Wokwi** for providing an excellent IoT simulation platform
+- **ThingSpeak** for cloud IoT data logging
+- **Chart.js** for beautiful data visualization
+- The open-source community for continuous inspiration
+
+---
+
+## 📧 Contact
+
+**Swapnil** - [@lilswapnil](https://github.com/lilswapnil)
+
+Project Link: [https://github.com/lilswapnil/wildlife-monitoring](https://github.com/lilswapnil/wildlife-monitoring)
+
+---
+
+<p align="center">Made with ❤️ for wildlife conservation</p>
