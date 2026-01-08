@@ -15,10 +15,10 @@ load_dotenv()
 app = FastAPI(title="Wildlife Monitoring API", description="API for wildlife monitoring dashboard")
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="api/static"), name="static")
 
 # Templates
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="api/templates")
 
 # --- Configuration ---
 ANIMAL_MAP = {
