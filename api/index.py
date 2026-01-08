@@ -113,12 +113,11 @@ def calculate_dashboard_stats(parsed_feeds: List[Dict]) -> Dict[str, Any]:
         "timeline": parsed_feeds
     }
 
+from fastapi import Request
+
 @app.get('/', response_class=HTMLResponse)
-async def index():
-    from fastapi import Request
-    async def _index(request: Request):
-        return templates.TemplateResponse("index.html", {"request": request})
-    return await _index
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get('/api/dashboard')
 async def get_dashboard_data():
